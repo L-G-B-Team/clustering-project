@@ -65,7 +65,9 @@ def get_zillow_from_sql() -> pd.DataFrame:
     LEFT JOIN propertylandusetype USING(propertylandusetypeid)
     LEFT JOIN storytype USING(storytypeid)
     LEFT JOIN typeconstructiontype USING(typeconstructiontypeid)
-    WHERE transactiondate < "2018"'''
+    WHERE transactiondate < "2018"
+    AND latitude IS NOT NULL
+    AND longitude IS NOT NULL;'''
     return pd.read_sql(query, get_db_url('zillow'))
 
 
@@ -117,7 +119,7 @@ def prep_zillow(df:pd.DataFrame,prop_row:float = .1, prop_col:float = .1)->pd.Da
     ## Parameters
     df: `pandas.DataFrame` with unfiltered values```
     ## Returns
-    
+    formatted and prepared `pandas.DataFrame` 
     '''
     df = df.dropna(subset='logerror')
     df = df.sort_values(by='transactiondate')
@@ -137,7 +139,38 @@ def prep_zillow(df:pd.DataFrame,prop_row:float = .1, prop_col:float = .1)->pd.Da
         'Triplex (3 Units, Any Combination)','Commercial/Office/Residential Mixed Used']).dropna()
     df = handle_missing_values(df,prop_row,prop_col).reset_index(drop=True)
     return df
+def handle_null_cols(df:pd.DataFrame,pct_col:float)-> pd.DataFrame:
+    pct_col = 1-pct_col
+    na_sums = pd.DataFrame(df.isna().sum())
+    na_sums = na_sums.reset_index().rename(columns={0:'n_nulls'})
+    na_sums['percentage'] =  na_sums.n_nulls / df.shape[0]
+    ret_indices = na_sums[na_sums.percentage <= pct_col]['index'].to_list()
+    return df[ret_indices]
 
+def handle_null_rows(df:pd.DataFrame, pct_row:float)->pd.DataFrame:
+    pct_row = 1-pct_row
+    return df[df.isna().sum(axis=1)/df.shape[1] <= pct_row]
+
+
+def handle_missing_values(df:pd.DataFrame, pct_row:float,pct_col:float)->pd.DataFrame:
+    df = handle_null_cols(df,pct_col)
+    return handle_null_rows(df,pct_row)
+
+def mark_outliers(df:pd.DataFrame,s:str,k:float=1.5)->pd.DataFrame:
+    q1,q3 = df[s].quantile([.25,.75])
+    iqr = q3-q1
+    mean = df[s].mean()
+    lower = mean - (q1 - k * iqr)
+    upper = mean + (q3 + k * iqr)
+    df[s].mean()
+    normals = df[(df[s] >= lower) & (df[s] <=upper)]
+    df['outliers'] = ''
+    df.loc[normals.index,'outliers'] = 'in_range'
+    df.loc[df[s]<lower,'outliers'] = 'lower'
+    df.loc[df[s]>upper,'outliers'] = 'upper'
+    df.outliers = df.outliers.astype('category')
+    return df
+    
 def tvt_split(dframe: pd.DataFrame, stratify: Union[str, None] = None,
               tv_split: float = .2, validate_split: float = .3, \
                 sample: Union[float, None] = None) -> \
@@ -200,37 +233,7 @@ def scale_data(train: pd.DataFrame, validate: pd.DataFrame, test: pd.DataFrame,
     ret_test = get_scaled_copy(test, x, scale_test)
     return ret_train, ret_valid, ret_test
   
-def handle_null_cols(df:pd.DataFrame,pct_col:float)-> pd.DataFrame:
-    pct_col = 1-pct_col
-    na_sums = pd.DataFrame(df.isna().sum())
-    na_sums = na_sums.reset_index().rename(columns={0:'n_nulls'})
-    na_sums['percentage'] =  na_sums.n_nulls / df.shape[0]
-    ret_indices = na_sums[na_sums.percentage <= pct_col]['index'].to_list()
-    return df[ret_indices]
 
-def handle_null_rows(df:pd.DataFrame, pct_row:float)->pd.DataFrame:
-    pct_row = 1-pct_row
-    return df[df.isna().sum(axis=1)/df.shape[1] <= pct_row]
-
-
-def handle_missing_values(df:pd.DataFrame, pct_row:float,pct_col:float)->pd.DataFrame:
-    df = handle_null_cols(df,pct_col)
-    return handle_null_rows(df,pct_row)
-
-def mark_outliers(df:pd.DataFrame,s:str,k:float=1.5)->pd.DataFrame:
-    q1,q3 = df[s].quantile([.25,.75])
-    iqr = q3-q1
-    mean = df[s].mean()
-    lower = mean - (q1 - k * iqr)
-    upper = mean + (q3 + k * iqr)
-    df[s].mean()
-    normals = df[(df[s] >= lower) & (df[s] <=upper)]
-    df['outliers'] = ''
-    df.loc[normals.index,'outliers'] = 'in_range'
-    df.loc[df[s]<lower,'outliers'] = 'lower'
-    df.loc[df[s]>upper,'outliers'] = 'upper'
-    df.outliers = df.outliers.astype('category')
-    return df
 if __name__ == "__main__":
     df = wrangle_zillow()
     df = prep_zillow(df)
