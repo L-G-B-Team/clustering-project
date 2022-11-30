@@ -6,7 +6,6 @@ from typing import List, Tuple, Union
 
 import numpy as np
 import pandas as pd
-from pynput.mouse import Controller
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import RobustScaler
 
@@ -147,13 +146,12 @@ def tvt_split(dframe: pd.DataFrame, stratify: Union[str, None] = None,
     as well as 2 floats where 0< f < 1 and
     returns a train, validate, and test split of the DataFame,
     split by tv_split initially and validate_split thereafter. '''
-    mouse = Controller()
     if stratify is not None:
         stratify = dframe[stratify]
     train_validate, test = train_test_split(
-        dframe, test_size=tv_split, random_state=int(mouse.position[0]), stratify=stratify)
+        dframe, test_size=tv_split, random_state=123, stratify=stratify)
     train, validate = train_test_split(
-        train_validate, test_size=validate_split, random_state=int(mouse.position[1]), stratify=stratify)
+        train_validate, test_size=validate_split, random_state=123, stratify=stratify)
     if sample is not None:
         train = train.sample(frac=sample)
         validate = validate.sample(frac=sample)
