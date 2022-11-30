@@ -1,6 +1,6 @@
 data/*
 env.py
-wip/*
+wip_*
 .DS_STORE*
 .vscode/*
 .pylintrc
