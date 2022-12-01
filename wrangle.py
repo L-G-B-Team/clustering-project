@@ -119,7 +119,7 @@ def prep_zillow(df:pd.DataFrame,prop_row:float = .75, prop_col:float = .5)->pd.D
     ## Parameters
     df: `pandas.DataFrame` with unfiltered values```
     ## Returns
-    formatted and prepared `pandas.DataFrame` 
+    formatted and prepared `pandas.DataFrame`
     '''
     df = df.dropna(subset='logerror')
     df = df.sort_values(by='transactiondate')
@@ -142,6 +142,7 @@ def prep_zillow(df:pd.DataFrame,prop_row:float = .75, prop_col:float = .5)->pd.D
     df.garage_car_count = df.garage_car_count.fillna(0)
     df.lot_sqft = df.lot_sqft.fillna(0)
     df = handle_missing_values(df,prop_row,prop_col).reset_index(drop=True)
+    df = mark_outliers(df,'log_error',1.5)
     return df
 def handle_null_cols(df:pd.DataFrame,pct_col:float)-> pd.DataFrame:
     pct_col = 1-pct_col
