@@ -31,4 +31,17 @@ def create_clusters_Q3(X_train, k, cluster_vars):
 
     return kmeans
 
-
+def generate_elbow(df:pd.DataFrame,k_min:int = 1,k_max:int = 30)->None:
+    inertia = [KMeans(i).fit(df).inertia_ for i in range(k_min,k_max)]
+    fig,axs = plt.subplots(1,2)
+    sns.lineplot(data=inertia,ax=axs[0])
+    axs[0].set_title('Inertia')
+    axs[0].set_xlabel('No. of Clusters')
+    axs[0].set_ylabel('Inertia')
+    pct_change = [((inertia[i]-inertia[i+1])/inertia[i])*100 for i in range(len(inertia)-1)]
+    sns.lineplot(data=pct_change,ax=axs[1])
+    axs[1].set_xlabel('No. of Clusters')
+    axs[1].set_ylabel('% of Change')
+    axs[1].set_title('% Change')
+    fig.tight_layout()
+    plt.show()
