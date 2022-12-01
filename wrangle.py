@@ -210,7 +210,21 @@ def mark_outliers(df:pd.DataFrame,s:str,k:float=1.5)->pd.DataFrame:
     df.loc[df[s]>upper,'outliers'] = 'upper'
     df.outliers = df.outliers.astype('category')
     return df
-
+def mark_bounds(df:pd.DataFrame, bound:float =0.5)->pd.DataFrame:
+    '''
+    adds a marker whether df objecs are below, above, or inside of the bound
+    ## Parameters
+    df: `DataFrame` containing zillow data
+    bound: `float` indicating the lower and upper bound
+    ## Returns
+    
+    '''
+    df['bound_group'] = ''
+    df[df.log_error < (0-bound)].bound_group = 'lower'
+    df[df.log_error > bound].bound_group = 'upper'
+    df[df.bound_group == ''] = 'in_bound'
+    df.bound_group = df.bound_group.astype('category')
+    return df
 def tvt_split(dframe: pd.DataFrame, stratify: Union[str, None] = None,
               tv_split: float = .2, validate_split: float = .3, \
                 sample: Union[float, None] = None) -> \
