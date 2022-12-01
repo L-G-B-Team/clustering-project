@@ -85,7 +85,8 @@ def df_from_csv(path: str) -> Union[pd.DataFrame, None]:
     return None
 
 
-def wrangle_zillow(from_sql: bool = False, from_csv: bool = False,prop_row:float = .75, prop_col:float = .1) -> pd.DataFrame:
+def wrangle_zillow(from_sql: bool = False, from_csv: bool = False,\
+    prop_row:float = .75, prop_col:float = .1) -> pd.DataFrame:
     '''
     wrangles Zillow data from either a MySQL query or a `.csv` file, prepares the  (if necessary)\
         , and returns a `pandas.DataFrame` object
@@ -145,6 +146,14 @@ def prep_zillow(df:pd.DataFrame,prop_row:float = .75, prop_col:float = .5)->pd.D
     df = mark_outliers(df,'log_error',1.5)
     return df
 def handle_null_cols(df:pd.DataFrame,pct_col:float)-> pd.DataFrame:
+    '''removes columns that do not have at least `pct_col` non-null values
+    ## Parameters:
+    df: `DataFrame` of data with nulls to be pruned
+    pct_col: Float `0 <= pct_col <=1` indicating what percentage of non-null values
+    required to keep column
+    ## Returns
+    pruned `DataFrame`
+    '''
     pct_col = 1-pct_col
     na_sums = pd.DataFrame(df.isna().sum())
     na_sums = na_sums.reset_index().rename(columns={0:'n_nulls'})
@@ -153,15 +162,41 @@ def handle_null_cols(df:pd.DataFrame,pct_col:float)-> pd.DataFrame:
     return df[ret_indices]
 
 def handle_null_rows(df:pd.DataFrame, pct_row:float)->pd.DataFrame:
+    '''removes rows that do not have at least `pct_row` non-null values
+    ## Parameters:
+    df: `DataFrame` of data with nulls to be pruned
+    pct_row: Float `0 <= pct_row <=1` indicating what percentage of non-null values
+    required to keep row
+    ## Returns
+    pruned `DataFrame`
+    '''
     pct_row = 1-pct_row
     return df[df.isna().sum(axis=1)/df.shape[1] <= pct_row]
 
 
 def handle_missing_values(df:pd.DataFrame, pct_row:float,pct_col:float)->pd.DataFrame:
+    '''
+    runs `handle_null_cols` and `handle_null_rows` (in that order) on `df`
+    ## Parameters
+    df: `DataFrame` containing null values to be pruned
+    pct_row: `float` to be passed to `handle_null_rows`
+    pct_cols: `float` to be passed to `handle_null_cols
+    ## Returns
+    `DataFrame` pruned of rows and columns with excessive null values
+    '''
     df = handle_null_cols(df,pct_col)
     return handle_null_rows(df,pct_row)
 
 def mark_outliers(df:pd.DataFrame,s:str,k:float=1.5)->pd.DataFrame:
+    '''
+    ## Parameters
+    df: `DataFrame` containing values to mark as outliers
+    s: `string` where `s in df.columns` indicating which column to operate on
+    k: `float` indicating how many Standard Deviations outside of the IQR a value must be
+    to be marked as an outlier
+    ## Returns
+    `DataFrame` with outlier status marked as `s + '_outlier'`
+    '''
     q1,q3 = df[s].quantile([.25,.75])
     iqr = q3-q1
     mean = df[s].mean()
@@ -169,13 +204,13 @@ def mark_outliers(df:pd.DataFrame,s:str,k:float=1.5)->pd.DataFrame:
     upper = mean + (q3 + k * iqr)
     df[s].mean()
     normals = df[(df[s] >= lower) & (df[s] <=upper)]
-    df['outliers'] = ''
+    df[s+'_outliers'] = ''
     df.loc[normals.index,'outliers'] = 'in_range'
     df.loc[df[s]<lower,'outliers'] = 'lower'
     df.loc[df[s]>upper,'outliers'] = 'upper'
     df.outliers = df.outliers.astype('category')
     return df
-    
+
 def tvt_split(dframe: pd.DataFrame, stratify: Union[str, None] = None,
               tv_split: float = .2, validate_split: float = .3, \
                 sample: Union[float, None] = None) -> \
@@ -195,8 +230,6 @@ def tvt_split(dframe: pd.DataFrame, stratify: Union[str, None] = None,
         validate = validate.sample(frac=sample)
         test = test.sample(frac=sample)
     return train, validate, test
-
-   
 
 def get_scaled_copy(dframe: pd.DataFrame, x: List[str], scaled_data: np.ndarray) -> pd.DataFrame:
     '''copies `df` and returns a DataFrame with `scaled_data`
@@ -238,7 +271,6 @@ def scale_data(train: pd.DataFrame, validate: pd.DataFrame, test: pd.DataFrame,
     ret_valid = get_scaled_copy(validate, x, scale_valid)
     ret_test = get_scaled_copy(test, x, scale_test)
     return ret_train, ret_valid, ret_test
-  
 
 if __name__ == "__main__":
     df = wrangle_zillow()
