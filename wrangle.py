@@ -140,6 +140,7 @@ def prep_zillow(df:pd.DataFrame,prop_row:float = .75, prop_col:float = .5)->pd.D
     df.pool_count = df.pool_count.fillna(0)
     df.fireplace_cnt = df.fireplace_cnt.fillna(0)
     df.garage_car_count = df.garage_car_count.fillna(0)
+    df.lot_sqft = df.lot_sqft.fillna(0)
     df = handle_missing_values(df,prop_row,prop_col).reset_index(drop=True)
     df = mark_outliers(df,'log_error',1.5)
     return df
@@ -195,6 +196,7 @@ def tvt_split(dframe: pd.DataFrame, stratify: Union[str, None] = None,
         test = test.sample(frac=sample)
     return train, validate, test
 
+   
 
 def get_scaled_copy(dframe: pd.DataFrame, x: List[str], scaled_data: np.ndarray) -> pd.DataFrame:
     '''copies `df` and returns a DataFrame with `scaled_data`
