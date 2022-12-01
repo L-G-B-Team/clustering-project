@@ -224,9 +224,9 @@ def mark_bounds(df:pd.DataFrame, bound:float =0.5)->pd.DataFrame:
     
     '''
     df['bound_group'] = ''
-    df.loc[df.log_error < (0-bound),'bound_group'] = 'lower'
-    df.loc[df.log_error > bound,'bound_group'] = 'upper'
-    df.loc[df.bound_group == '','bound_group'] = 'in_bound'
+    df.loc[df.log_error < (0-bound),'bound_group'] = 'below'
+    df.loc[df.log_error > bound,'bound_group'] = 'above'
+    df.loc[df.bound_group == '','bound_group'] = 'in'
     df.bound_group = df.bound_group.astype('category')
     return df
 def tvt_split(dframe: pd.DataFrame, stratify: Union[str, None] = None,
