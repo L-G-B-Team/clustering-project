@@ -85,7 +85,7 @@ def df_from_csv(path: str) -> Union[pd.DataFrame, None]:
     return None
 
 
-def wrangle_zillow(from_sql: bool = False, from_csv: bool = False) -> pd.DataFrame:
+def wrangle_zillow(from_sql: bool = False, from_csv: bool = False,prop_row:float = .75, prop_col:float = .1) -> pd.DataFrame:
     '''
     wrangles Zillow data from either a MySQL query or a `.csv` file, prepares the  (if necessary)\
         , and returns a `pandas.DataFrame` object
@@ -111,9 +111,9 @@ def wrangle_zillow(from_sql: bool = False, from_csv: bool = False) -> pd.DataFra
         ret_df = get_zillow_from_sql()
         ret_df.to_csv('data/zillow.csv', index_label=False)
 
-    return prep_zillow(df)
+    return prep_zillow(ret_df,prop_row=prop_row,prop_col=prop_col)
 
-def prep_zillow(df:pd.DataFrame,prop_row:float = .1, prop_col:float = .1)->pd.DataFrame:
+def prep_zillow(df:pd.DataFrame,prop_row:float = .75, prop_col:float = .5)->pd.DataFrame:
     '''
     prepares `DataFrame` for processing
     ## Parameters
@@ -137,6 +137,9 @@ def prep_zillow(df:pd.DataFrame,prop_row:float = .1, prop_col:float = .1)->pd.Da
     df.property_land_use_desc = df.property_land_use_desc.cat.remove_categories(\
         ['Duplex (2 Units, Any Combination)','Quadruplex (4 Units, Any Combination)',\
         'Triplex (3 Units, Any Combination)','Commercial/Office/Residential Mixed Used']).dropna()
+    df.pool_count = df.pool_count.fillna(0)
+    df.fireplace_cnt = df.fireplace_cnt.fillna(0)
+    df.garage_car_count = df.garage_car_count.fillna(0)
     df = handle_missing_values(df,prop_row,prop_col).reset_index(drop=True)
     return df
 def handle_null_cols(df:pd.DataFrame,pct_col:float)-> pd.DataFrame:
