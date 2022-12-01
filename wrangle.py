@@ -139,11 +139,13 @@ def prep_zillow(df:pd.DataFrame,prop_row:float = .75, prop_col:float = .5)->pd.D
         ['Duplex (2 Units, Any Combination)','Quadruplex (4 Units, Any Combination)',\
         'Triplex (3 Units, Any Combination)','Commercial/Office/Residential Mixed Used']).dropna()
     df.pool_count = df.pool_count.fillna(0)
-    df.fireplace_cnt = df.fireplace_cnt.fillna(0)
+    df.fireplace_count = df.fireplace_count.fillna(0)
     df.garage_car_count = df.garage_car_count.fillna(0)
     df.lot_sqft = df.lot_sqft.fillna(0)
     df = handle_missing_values(df,prop_row,prop_col).reset_index(drop=True)
     df = mark_outliers(df,'log_error',1.5)
+    df = df[df.bed_count > 0]
+    df = df[df.bath_count > 0]
     return df
 def handle_null_cols(df:pd.DataFrame,pct_col:float)-> pd.DataFrame:
     '''removes columns that do not have at least `pct_col` non-null values
@@ -199,10 +201,8 @@ def mark_outliers(df:pd.DataFrame,s:str,k:float=1.5)->pd.DataFrame:
     '''
     q1,q3 = df[s].quantile([.25,.75])
     iqr = q3-q1
-    mean = df[s].mean()
-    lower = mean - (q1 - k * iqr)
-    upper = mean + (q3 + k * iqr)
-    df[s].mean()
+    lower = (q1 - k * iqr)
+    upper = (q3 + k * iqr)
     normals = df[(df[s] >= lower) & (df[s] <=upper)]
     df[s+'_outliers'] = ''
     df.loc[normals.index,'outliers'] = 'in_range'
