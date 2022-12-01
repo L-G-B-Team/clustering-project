@@ -255,7 +255,7 @@ def scale(df: pd.DataFrame,x:List[str])->pd.DataFrame:
     scaler = MinMaxScaler()
     scaler.fit(df[x])
     ret_x = ['scaled_' + s for s in x]
-    return pd.DataFrame(scaler.transform(df[x]),columns=ret_x)
+    return pd.DataFrame(scaler.transform(df[x]),columns=ret_x, index=df.index)
 
 def scale_data(train: pd.DataFrame, validate: pd.DataFrame, test: pd.DataFrame,
                x: List[str]) ->\
