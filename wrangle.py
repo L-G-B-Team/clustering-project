@@ -119,7 +119,11 @@ def prep_zillow(df:pd.DataFrame,prop_row:float = .75, prop_col:float = .5,\
     '''
     prepares `DataFrame` for processing
     ## Parameters
-    df: `pandas.DataFrame` with unfiltered values```
+    df: `pandas.DataFrame` with unfiltered values
+    prop_row: `float` to define `pct_row` passed to `handle_null_rows`
+    prop_col: `float` to define `pct_col` passed to `handle_null_cols`
+    outlier_k: `float` defining outer bound, passed to `mark_outliers`
+    bound: `float` defining bound, passed to `mark_bounds`
     ## Returns
     formatted and prepared `pandas.DataFrame`
     '''
