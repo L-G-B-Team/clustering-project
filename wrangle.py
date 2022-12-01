@@ -114,7 +114,8 @@ def wrangle_zillow(from_sql: bool = False, from_csv: bool = False,\
 
     return prep_zillow(ret_df,prop_row=prop_row,prop_col=prop_col)
 
-def prep_zillow(df:pd.DataFrame,prop_row:float = .75, prop_col:float = .5)->pd.DataFrame:
+def prep_zillow(df:pd.DataFrame,prop_row:float = .75, prop_col:float = .5,\
+    outlier_k:float=1.5,bound:float = 0.5)->pd.DataFrame:
     '''
     prepares `DataFrame` for processing
     ## Parameters
@@ -143,9 +144,8 @@ def prep_zillow(df:pd.DataFrame,prop_row:float = .75, prop_col:float = .5)->pd.D
     df.garage_car_count = df.garage_car_count.fillna(0)
     df.lot_sqft = df.lot_sqft.fillna(0)
     df = handle_missing_values(df,prop_row,prop_col).reset_index(drop=True)
-    df = mark_outliers(df,'log_error',1.5)
-    df = df[df.bed_count > 0]
-    df = df[df.bath_count > 0]
+    df = mark_outliers(df,'log_error',outlier_k)
+    df = mark_bounds(df,bound)
     return df
 def handle_null_cols(df:pd.DataFrame,pct_col:float)-> pd.DataFrame:
     '''removes columns that do not have at least `pct_col` non-null values
