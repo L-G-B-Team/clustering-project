@@ -7,7 +7,7 @@ from typing import List, Tuple, Union
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import RobustScaler
+from sklearn.preprocessing import MinMaxScaler
 
 from env import get_db_url
 
@@ -255,14 +255,14 @@ def scale_data(train: pd.DataFrame, validate: pd.DataFrame, test: pd.DataFrame,
     validate: `pandas.DataFrame` of validate data
     test: `pandas.DataFrame` of test data
     x: list of str representing feature columns in the data
-    method: `callable` of scaling function (defaults to `sklearn.RobustScaler`)
+    method: `callable` of scaling function (defaults to `sklearn.preprocessing.MinMaxScaler`)
     ## Returns
     a tuple of scaled copies of train, validate, and test.
     '''
     xtrain = train[x]
     xvalid = validate[x]
     xtest = test[x]
-    scaler = RobustScaler()
+    scaler = MinMaxScaler()
     scaler.fit(xtrain)
     scale_train = scaler.transform(xtrain)
     scale_valid = scaler.transform(xvalid)
