@@ -111,7 +111,7 @@ def wrangle_zillow(from_sql: bool = False, from_csv: bool = False) -> pd.DataFra
         ret_df = get_zillow_from_sql()
         ret_df.to_csv('data/zillow.csv', index_label=False)
 
-    return ret_df
+    return prep_zillow(df)
 
 def prep_zillow(df:pd.DataFrame,prop_row:float = .1, prop_col:float = .1)->pd.DataFrame:
     '''
