@@ -244,6 +244,14 @@ def get_scaled_copy(dframe: pd.DataFrame, x: List[str], scaled_data: np.ndarray)
     ret_df.loc[:, x] = scaled_data
     return ret_df
 def scale(df: pd.DataFrame,x:List[str])->pd.DataFrame:
+    '''
+    scales `df[[x]]` using a MinMaxScaler
+    ## Parameters
+    df: `Dataframe` of values to be scaled
+    x: `List[str]` of x values to be scaled
+    ## Returns
+    `DataFrame` consisting of scaled values, labeled as `scaled_ + x`
+    '''
     scaler = MinMaxScaler()
     scaler.fit(df[x])
     ret_x = ['scaled_' + s for s in x]
