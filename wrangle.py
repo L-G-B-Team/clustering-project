@@ -127,7 +127,8 @@ def prep_zillow(df:pd.DataFrame,prop_row:float, prop_col:float,\
     df = df.dropna(subset='logerror')
     df = df.sort_values(by='transactiondate')
     df = df.drop_duplicates(subset=['parcelid'],keep='last')
-    cols_to_remove = ['id','id.1','propertycountylandusecode', 'propertyzoningdesc']
+    cols_to_remove = ['id','id.1','propertycountylandusecode', 'propertyzoningdesc',
+    'propertylandusedesc','heatingorsystemdesc']
     for c in df.columns:
         if re.match('.*typeid',c) is not None:
             cols_to_remove.append(str(c))
@@ -136,10 +137,6 @@ def prep_zillow(df:pd.DataFrame,prop_row:float, prop_col:float,\
     df = df.convert_dtypes()
     df.fips = df.fips.astype('category')
     df.transaction_date = pd.to_datetime(df.transaction_date)
-    df.property_land_use_desc = df.property_land_use_desc.astype('category')
-    df.property_land_use_desc = df.property_land_use_desc.cat.remove_categories(\
-        ['Duplex (2 Units, Any Combination)','Quadruplex (4 Units, Any Combination)',\
-        'Triplex (3 Units, Any Combination)','Commercial/Office/Residential Mixed Used']).dropna()
     df.pool_count = df.pool_count.fillna(0)
     df.fireplace_count = df.fireplace_count.fillna(0)
     df.garage_car_count = df.garage_car_count.fillna(0)
@@ -149,6 +146,7 @@ def prep_zillow(df:pd.DataFrame,prop_row:float, prop_col:float,\
     df = handle_missing_values(df,prop_row,prop_col).reset_index(drop=True)
     df = mark_outliers(df,'log_error',outlier_k)
     df = mark_bounds(df,bound)
+    df = df.dropna(axis=1)
     return df
 def handle_null_cols(df:pd.DataFrame,pct_col:float)-> pd.DataFrame:
     '''removes columns that do not have at least `pct_col` non-null values
@@ -301,5 +299,6 @@ def scale_data(train: pd.DataFrame, validate: pd.DataFrame, test: pd.DataFrame,
     ret_valid = get_scaled_copy(validate, x, scale_valid)
     ret_test = get_scaled_copy(test, x, scale_test)
     return ret_train, ret_valid, ret_test
-
-
+if __name__ == "__main__":
+    df = wrangle_zillow()
+    print(df.isna().sum())
