@@ -248,6 +248,7 @@ def tvt_split(dframe: pd.DataFrame, stratify: Union[str, None] = None,
         train = train.sample(frac=sample)
         validate = validate.sample(frac=sample)
         test = test.sample(frac=sample)
+    train.to_csv('data/zillow_train.csv')
     return train, validate, test
 
 def get_scaled_copy(dframe: pd.DataFrame, x: List[str], scaled_data: np.ndarray) -> pd.DataFrame:
