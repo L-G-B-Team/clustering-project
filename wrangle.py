@@ -131,7 +131,8 @@ def prep_zillow(df:pd.DataFrame,prop_row:float, prop_col:float,\
     df = df.dropna(subset='logerror')
     df = df.sort_values(by='transactiondate')
     df = df.drop_duplicates(subset=['parcelid'],keep='last')
-    cols_to_remove = ['id','id.1']
+    cols_to_remove = ['id','id.1','property_county_use_code',
+       'property_zoning_desc']
     for c in df.columns:
         if re.match('.*typeid',c) is not None:
             cols_to_remove.append(str(c))
@@ -214,7 +215,6 @@ def mark_outliers(df:pd.DataFrame,s:str,k:float)->pd.DataFrame:
     df.loc[df[s]<lower,'outliers'] = 'lower'
     df.loc[df[s]>upper,'outliers'] = 'upper'
     df.outliers = df.outliers.astype('category')
-    df = df.dropna()
     return df
 def mark_bounds(df:pd.DataFrame, bound:float)->pd.DataFrame:
     '''
@@ -249,6 +249,7 @@ def tvt_split(dframe: pd.DataFrame, stratify: Union[str, None] = None,
         train = train.sample(frac=sample)
         validate = validate.sample(frac=sample)
         test = test.sample(frac=sample)
+    train.to_csv('data/zillow_train.csv')
     return train, validate, test
 
 def get_scaled_copy(dframe: pd.DataFrame, x: List[str], scaled_data: np.ndarray) -> pd.DataFrame:
