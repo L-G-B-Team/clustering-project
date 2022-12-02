@@ -135,3 +135,30 @@ def cluster_fun(df:pd.DataFrame)->pd.DataFrame:
                         palette='colorblind', data=cluster_test)
                 plt.show()
     return cluster_test
+
+
+def tax_sqft_plot(df:pd.DataFrame)->None:
+    sns.set_palette('magma')
+    fig,axs = plt.subplots(1,2)
+    df.log_error = df.log_error.astype('float')
+    sns.scatterplot(data=df,x='calc_sqft',y='tax_value',hue='log_error',ax=axs[0],palette='magma').\
+        set(yscale='log')
+    calc = df[np.abs(df.log_error) >=1]
+    sns.scatterplot(data=calc, x='calc_sqft',y='tax_value',hue='log_error',ax=axs[1],palette='magma').\
+        set(yscale='log')
+    fig.suptitle('Tax Value vs. Calculated Sqft.')
+    axs[0].set_title('All Data')
+    axs[1].set_title('Abs. Val of Log Error >= 1')
+    plt.show()
+def tax_sqft_cluster_plot(train:pd.DataFrame)->None:
+    tax_sqft = train[['calc_sqft','tax_value']]
+    tax_sqft['calc_sqft'] = train['calc_sqft']
+    tax_sqft['tax_value'] = train['tax_value']
+    kmeans = KMeans(5,random_state=420)
+    kmeans.fit(tax_sqft)
+    tax_sqft['tax_sqft_cluster'] = kmeans.predict(tax_sqft)
+    tax_sqft['log_error'] = train.log_error
+    sns.set_palette('magma')
+    g = sns.FacetGrid(data=tax_sqft,col='tax_sqft_cluster',col_wrap=2,sharey=True,palette='mako').set(yscale='log')
+    g.map_dataframe(sns.histplot,x='log_error')
+    plt.show()
