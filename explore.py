@@ -72,3 +72,8 @@ def viz_for_Q3(train_df):
     axes[1].set_title('Scaled')
     
     plt.show()
+
+def cluster_kde(df:pd.DataFrame,cluster:str,target:str)->sns.FacetGrid:
+    facet = sns.FacetGrid(data=df,col_wrap=4,col=cluster)
+    facet = facet.map_dataframe(sns.boxplot,x=target)
+    return facet
