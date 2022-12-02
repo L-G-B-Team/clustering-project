@@ -1,20 +1,57 @@
-import pandas as pd
-import numpy as np
-import wrangle as w
-
-import env
+import warnings
 
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import seaborn as sns
-
+from IPython.display import Markdown as md
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import MinMaxScaler, RobustScaler
-from sklearn.model_selection import train_test_split
 
-import warnings
+import env
+import wrangle as w
+
 warnings.filterwarnings('ignore')
 
+def p_to_md(p:float,alpha:float=.05,**kwargs)->md:
+    '''
+    returns the result of a p test as a `IPython.display.Markdown`
+    ## Parameters
+    p: `float` of the p value from performed Hypothesis test
+    alpha: `float` of alpha value for test, defaults to 0.05
+    kwargs: any additional return values of statistical test
+    ## Returns
+    formatted `Markdown` object containing results of hypothesis test.
 
+    '''
+    ret_str = ''
+    p_flag = p < alpha
+    for k,v in kwargs.items():
+        ret_str += f'## {k} = {v}\n\n'
+    ret_str += f'## Because $\\alpha$ {">" if p_flag else "<"} p,' + \
+        f'we {"failed to " if ~(p_flag) else ""} reject $H_0$'
+    return md(ret_str)
+def t_to_md(p:float,t:float,alpha:float=.05,**kwargs):
+    '''takes a p-value, alpha, and any T-test arguments and
+    creates a Markdown object with the information.
+    ## Parameters
+    p: float of the p value from run T-Test
+    t: float of the t-value from run T-TEst
+    alpha: desired alpha value, defaults to 0.05
+    ## Returns
+    `IPython.display.Markdown` object with results of the statistical test
+    '''
+    ret_str = ''
+    t_flag = t > 0
+    p_flag = p < alpha
+    ret_str += f'## t = {t} \n\n'
+    for k,v in kwargs.items():
+        ret_str += f'## {k} = {v}\n\n'
+    ret_str += f' ## p = {p} \n\n'
+    ret_str +=\
+         f'## Because t {">" if t_flag else "<"} 0 and $\\alpha$ {">" if p_flag else "<"} p,' + \
+            f'we {"failed to " if ~(t_flag & p_flag) else ""} reject $H_0$'
+    return md(ret_str)
 #################### CREATING CLUSTERS
 def create_clusters_Q3(X_train, k, cluster_vars):
     '''This function uses pool_count, garage_car_count, and lot_sqft 
@@ -77,3 +114,24 @@ def cluster_kde(df:pd.DataFrame,cluster:str,target:str)->sns.FacetGrid:
     facet = sns.FacetGrid(data=df,col_wrap=4,col=cluster)
     facet = facet.map_dataframe(sns.boxplot,x=target)
     return facet
+
+def cluster_fun(df:pd.DataFrame)->pd.DataFrame:
+    all_features = df[['bath_count','bed_count',
+    'calc_sqft','latitude','longitude','tax_value','fireplace_count']].columns
+    cluster_test =df.copy()
+    for feature in all_features:
+        for feature2 in all_features:
+            if feature != feature2:
+                cluster_fun = cluster_test[[feature, feature2]]
+
+                #Fit a new model to my scaled data
+                kmeans_scale = KMeans(n_clusters=4)
+
+                kmeans_scale.fit(cluster_fun)
+                cluster_name = feature +'_'+ feature2 + '_cluster'
+                cluster_test[cluster_name] = kmeans_scale.predict(cluster_fun)
+                plt.title(f'{feature} and {feature2} cluster')
+                sns.scatterplot(y='log_error', x=cluster_name,
+                        palette='colorblind', data=cluster_test)
+                plt.show()
+    return cluster_test
