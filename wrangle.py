@@ -148,6 +148,8 @@ def prep_zillow(df:pd.DataFrame,prop_row:float, prop_col:float,\
     df.fireplace_count = df.fireplace_count.fillna(0)
     df.garage_car_count = df.garage_car_count.fillna(0)
     df.lot_sqft = df.lot_sqft.fillna(0)
+    na_bath = df[df.calc_bath_and_bed.isna()]
+    df.loc[df.calc_bath_and_bed.isna(),'calc_bath_and_bed'] = na_bath.bed_count + na_bath.bath_count
     df = handle_missing_values(df,prop_row,prop_col).reset_index(drop=True)
     df = mark_outliers(df,'log_error',outlier_k)
     df = mark_bounds(df,bound)
