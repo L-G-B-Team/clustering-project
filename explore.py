@@ -36,7 +36,7 @@ def t_to_md(p:float,t:float,alpha:float=.05,**kwargs):
     creates a Markdown object with the information.
     ## Parameters
     p: float of the p value from run T-Test
-    t: float of the t-value from run T-TEst
+    t: float of the t-value from run T-Test
     alpha: desired alpha value, defaults to 0.05
     ## Returns
     `IPython.display.Markdown` object with results of the statistical test
@@ -70,7 +70,7 @@ def create_clusters_Q3(X_train, k, cluster_vars):
 
 def generate_elbow(df:pd.DataFrame,k_min:int = 1,k_max:int = 30)->None:
     inertia = {i:KMeans(i).fit(df).inertia_ for i in range(k_min,k_max)}
-    fig,axs = plt.subplots(1,2)
+    fig,axs = plt.subplots(1,2,figsize=(12,5))
     sns.lineplot(data=inertia,ax=axs[0])
     axs[0].set_title('Inertia')
     axs[0].set_xlabel('No. of Clusters')
