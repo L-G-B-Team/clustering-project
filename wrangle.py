@@ -86,7 +86,8 @@ def df_from_csv(path: str) -> Union[pd.DataFrame, None]:
 
 
 def wrangle_zillow(from_sql: bool = False, from_csv: bool = False,\
-    prop_row:float = .75, prop_col:float = .1) -> pd.DataFrame:
+    prop_row:float = .75, prop_col:float = .5,
+    outlier_k:float=1.5,bound:float = 0.5) -> pd.DataFrame:
     '''
     wrangles Zillow data from either a MySQL query or a `.csv` file, prepares the  (if necessary)\
         , and returns a `pandas.DataFrame` object
@@ -112,13 +113,18 @@ def wrangle_zillow(from_sql: bool = False, from_csv: bool = False,\
         ret_df = get_zillow_from_sql()
         ret_df.to_csv('data/zillow.csv', index_label=False)
 
-    return prep_zillow(ret_df,prop_row=prop_row,prop_col=prop_col)
+    return prep_zillow(ret_df,prop_row=prop_row,prop_col=prop_col,outlier_k=outlier_k,bound=bound)
 
-def prep_zillow(df:pd.DataFrame,prop_row:float = .75, prop_col:float = .5)->pd.DataFrame:
+def prep_zillow(df:pd.DataFrame,prop_row:float, prop_col:float,\
+    outlier_k:float,bound:float)->pd.DataFrame:
     '''
     prepares `DataFrame` for processing
     ## Parameters
-    df: `pandas.DataFrame` with unfiltered values```
+    df: `pandas.DataFrame` with unfiltered values
+    prop_row: `float` to define `pct_row` passed to `handle_null_rows`
+    prop_col: `float` to define `pct_col` passed to `handle_null_cols`
+    outlier_k: `float` defining outer bound, passed to `mark_outliers`
+    bound: `float` defining bound, passed to `mark_bounds`
     ## Returns
     formatted and prepared `pandas.DataFrame`
     '''
@@ -143,9 +149,8 @@ def prep_zillow(df:pd.DataFrame,prop_row:float = .75, prop_col:float = .5)->pd.D
     df.garage_car_count = df.garage_car_count.fillna(0)
     df.lot_sqft = df.lot_sqft.fillna(0)
     df = handle_missing_values(df,prop_row,prop_col).reset_index(drop=True)
-    df = mark_outliers(df,'log_error',1.5)
-    df = df[df.bed_count > 0]
-    df = df[df.bath_count > 0]
+    df = mark_outliers(df,'log_error',outlier_k)
+    df = mark_bounds(df,bound)
     return df
 def handle_null_cols(df:pd.DataFrame,pct_col:float)-> pd.DataFrame:
     '''removes columns that do not have at least `pct_col` non-null values
@@ -189,7 +194,7 @@ def handle_missing_values(df:pd.DataFrame, pct_row:float,pct_col:float)->pd.Data
     df = handle_null_cols(df,pct_col)
     return handle_null_rows(df,pct_row)
 
-def mark_outliers(df:pd.DataFrame,s:str,k:float=1.5)->pd.DataFrame:
+def mark_outliers(df:pd.DataFrame,s:str,k:float)->pd.DataFrame:
     '''
     ## Parameters
     df: `DataFrame` containing values to mark as outliers
@@ -210,7 +215,21 @@ def mark_outliers(df:pd.DataFrame,s:str,k:float=1.5)->pd.DataFrame:
     df.loc[df[s]>upper,'outliers'] = 'upper'
     df.outliers = df.outliers.astype('category')
     return df
-
+def mark_bounds(df:pd.DataFrame, bound:float)->pd.DataFrame:
+    '''
+    adds a marker whether df objecs are below, above, or inside of the bound
+    ## Parameters
+    df: `DataFrame` containing zillow data
+    bound: `float` indicating the lower and upper bound
+    ## Returns
+    `DataFrame` with values marked appropriately
+    '''
+    df['bound_group'] = ''
+    df.loc[df.log_error < (0-bound),'bound_group'] = 'below'
+    df.loc[df.log_error > bound,'bound_group'] = 'above'
+    df.loc[df.bound_group == '','bound_group'] = 'in'
+    df.bound_group = df.bound_group.astype('category')
+    return df
 def tvt_split(dframe: pd.DataFrame, stratify: Union[str, None] = None,
               tv_split: float = .2, validate_split: float = .3, \
                 sample: Union[float, None] = None) -> \
@@ -229,6 +248,7 @@ def tvt_split(dframe: pd.DataFrame, stratify: Union[str, None] = None,
         train = train.sample(frac=sample)
         validate = validate.sample(frac=sample)
         test = test.sample(frac=sample)
+    train.to_csv('data/zillow_train.csv')
     return train, validate, test
 
 def get_scaled_copy(dframe: pd.DataFrame, x: List[str], scaled_data: np.ndarray) -> pd.DataFrame:
@@ -284,7 +304,4 @@ def scale_data(train: pd.DataFrame, validate: pd.DataFrame, test: pd.DataFrame,
     ret_test = get_scaled_copy(test, x, scale_test)
     return ret_train, ret_valid, ret_test
 
-if __name__ == "__main__":
-    df = wrangle_zillow()
-    df = prep_zillow(df)
-    print(df.columns)
+
