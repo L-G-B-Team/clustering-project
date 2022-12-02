@@ -207,10 +207,11 @@ def mark_outliers(df:pd.DataFrame,s:str,k:float)->pd.DataFrame:
     lower = (q1 - k * iqr)
     upper = (q3 + k * iqr)
     normals = df[(df[s] >= lower) & (df[s] <=upper)]
-    df[s+'_outliers'] = ''
-    df.loc[normals.index,'outliers'] = 'in_range'
-    df.loc[df[s]<lower,'outliers'] = 'lower'
-    df.loc[df[s]>upper,'outliers'] = 'upper'
+    outlier_str = s+'_outliers'
+    df[outlier_str] = ''
+    df.loc[normals.index,outlier_str] = 'in_range'
+    df.loc[df[s]<lower,outlier_str] = 'lower'
+    df.loc[df[s]>upper,outlier_str] = 'upper'
     df.outliers = df.outliers.astype('category')
     return df
 def mark_bounds(df:pd.DataFrame, bound:float)->pd.DataFrame:
