@@ -163,7 +163,7 @@ def handle_null_cols(df:pd.DataFrame,pct_col:float)-> pd.DataFrame:
     '''
     pct_col = 1-pct_col
     na_sums = pd.DataFrame(df.isna().sum())
-    na_sums = na_sums.reset_index().rename(columns={0:'n_nulls'})
+    na_sums = na_sums.reset_index(drop=True).rename(columns={0:'n_nulls'})
     na_sums['percentage'] =  na_sums.n_nulls / df.shape[0]
     ret_indices = na_sums[na_sums.percentage <= pct_col]['index'].to_list()
     return df[ret_indices]
