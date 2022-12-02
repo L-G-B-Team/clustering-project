@@ -85,7 +85,7 @@ def df_from_csv(path: str) -> Union[pd.DataFrame, None]:
     return None
 
 
-def wrangle_zillow(from_sql: bool = False, from_csv: bool = False,\
+def wrangle_zillow(from_sql: bool = False,\
     prop_row:float = .75, prop_col:float = .5,
     outlier_k:float=1.5,bound:float = 0.5) -> pd.DataFrame:
     '''
@@ -102,10 +102,6 @@ def wrangle_zillow(from_sql: bool = False, from_csv: bool = False,\
     '''
     # aquire Zillow data from .csv if exists
     ret_df = None
-    if not from_sql and not from_csv:
-        ret_df = df_from_csv('data/prepared_zillow.csv')
-        if ret_df is not None:
-            return ret_df
     if not from_sql:
         ret_df = df_from_csv('data/zillow.csv')
     if ret_df is None:
@@ -148,6 +144,9 @@ def prep_zillow(df:pd.DataFrame,prop_row:float, prop_col:float,\
     df.fireplace_count = df.fireplace_count.fillna(0)
     df.garage_car_count = df.garage_car_count.fillna(0)
     df.lot_sqft = df.lot_sqft.fillna(0)
+    df = df.reset_index(drop=True)
+    na_bed_bath = df[df.calc_bath_and_bed.isna()]
+    df.loc[df.calc_bath_and_bed.isna(),'calc_bath_and_bed'] = na_bed_bath.bath_count + na_bed_bath.bed_count
     df = handle_missing_values(df,prop_row,prop_col).reset_index(drop=True)
     df = mark_outliers(df,'log_error',outlier_k)
     df = mark_bounds(df,bound)
