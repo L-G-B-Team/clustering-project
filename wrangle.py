@@ -131,8 +131,7 @@ def prep_zillow(df:pd.DataFrame,prop_row:float, prop_col:float,\
     df = df.dropna(subset='logerror')
     df = df.sort_values(by='transactiondate')
     df = df.drop_duplicates(subset=['parcelid'],keep='last')
-    cols_to_remove = ['id','id.1','property_county_use_code',
-       'property_zoning_desc']
+    cols_to_remove = ['id','id.1','propertycountylandusecode', 'propertyzoningdesc']
     for c in df.columns:
         if re.match('.*typeid',c) is not None:
             cols_to_remove.append(str(c))
