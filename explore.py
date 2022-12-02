@@ -52,6 +52,12 @@ def t_to_md(p:float,t:float,alpha:float=.05,**kwargs):
          f'## Because t {">" if t_flag else "<"} 0 and $\\alpha$ {">" if p_flag else "<"} p,' + \
             f'we {"failed to " if ~(t_flag & p_flag) else ""} reject $H_0$'
     return md(ret_str)
+
+def anova_test(df,col):
+    group_list = [train[train[col] == x].log_error.to_numpy() for x in range(4)]
+    t,p = stats.kruskal(group_list[0],group_list[1],group_list[2],group_list[3])
+    return e.t_to_md(t,p)
+
 #################### CREATING CLUSTERS
 def create_clusters_Q3(X_train, k, cluster_vars):
     '''This function uses pool_count, garage_car_count, and lot_sqft 
