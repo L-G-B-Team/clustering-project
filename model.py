@@ -20,8 +20,8 @@ def select_baseline(ytrain:pd.Series)->md:
     '''
     med_base = ytrain.median()
     mean_base = ytrain.mean()
-    mean_eval = ev.regression_errors(ytrain,mean_base,'Mean Baseline')[['RMSE']]
-    med_eval = ev.regression_errors(ytrain,med_base,'Median Baseline')[['RMSE']]
+    mean_eval = ev.regression_errors(ytrain,mean_base,'Mean Baseline')
+    med_eval = ev.regression_errors(ytrain,med_base,'Median Baseline')
     ret_md = pd.concat([mean_eval,med_eval]).to_markdown()
     ret_md += '\n### Because mean outperformed median on all metrics, \
         we will use mean as our baseline'
