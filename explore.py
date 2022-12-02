@@ -69,7 +69,7 @@ def create_clusters_Q3(X_train, k, cluster_vars):
     return kmeans
 
 def generate_elbow(df:pd.DataFrame,k_min:int = 1,k_max:int = 30)->None:
-    inertia = {i:KMeans(i).fit(df).inertia_ for i in range(k_min,k_max)}
+    inertia = {i:KMeans(i,random_state=420).fit(df).inertia_ for i in range(k_min,k_max)}
     fig,axs = plt.subplots(1,2,figsize=(12,5))
     sns.lineplot(data=inertia,ax=axs[0])
     axs[0].set_title('Inertia')

@@ -153,7 +153,7 @@ def prep_zillow(df:pd.DataFrame,prop_row:float, prop_col:float,\
     na_bath = df[df.calc_bath_and_bed.isna()]
     df.loc[df.calc_bath_and_bed.isna(),'calc_bath_and_bed'] = na_bath.bed_count + na_bath.bath_count
     df = handle_missing_values(df,prop_row,prop_col).reset_index(drop=True)
-    
+    df = df.dropna(axis=1)
     return df
 def handle_null_cols(df:pd.DataFrame,pct_col:float)-> pd.DataFrame:
     '''removes columns that do not have at least `pct_col` non-null values
