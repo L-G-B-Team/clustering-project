@@ -214,6 +214,7 @@ def mark_outliers(df:pd.DataFrame,s:str,k:float)->pd.DataFrame:
     df.loc[df[s]<lower,'outliers'] = 'lower'
     df.loc[df[s]>upper,'outliers'] = 'upper'
     df.outliers = df.outliers.astype('category')
+    df = df.dropna()
     return df
 def mark_bounds(df:pd.DataFrame, bound:float)->pd.DataFrame:
     '''
