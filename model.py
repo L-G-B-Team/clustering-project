@@ -161,13 +161,14 @@ def apply_to_clusters(df: pd.DataFrame, features: str, target: str,
                       **kwargs) -> pd.DataFrame:
     # TODO Woody Docstring
 
-    return_frame = df.copy()
-    return_frame['y_pred'] = 0.0
-    for cluster, cluster_frame in df.groupby(cluster_col):
-        return_frame.loc[return_frame[cluster_col] == cluster,
-                         'y_pred'] = regressors[cluster].predict(df[df[cluster_col] == cluster][features])
+    predictions_df = pd.DataFrame()
+    predictions_df['y_true'] = df.log_error
+    predictions_df['y_pred'] = 1.0
+    cluster_group = df.groupby(cluster_col)
+    for i,group in cluster_group:
+        predictions_df.iloc[group.index,1] = regressors[i].predict(group[features])
 
-    return return_frame
+    return predictions_df
 
 
 def process_model(df: pd.DataFrame, features: List[str], target: str, scaler: MinMaxScaler = MinMaxScaler(), kmeans: Union[KMeans, None] = None, k: Union[int, None] = None,
