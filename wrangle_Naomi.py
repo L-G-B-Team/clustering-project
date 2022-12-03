@@ -131,16 +131,14 @@ def viz_for_Q3(train_df):
     fig.subtitle = ('Unscaled vs. Scaled')
 
     # Unscaled
-    sns.stripplot(ax=axes[0], data=train, x='cluster3', y='log_error')
+    sns.stripplot(ax=axes[0], data=train, x='cluster3', y='log_error', cmap= 'flare')
     axes[0].set_title('Unscaled')
 
     # Scaled
-    sns.stripplot(ax=axes[1], data=train_scaled3,
-                  x='cluster3_scaled', y='log_error')
+    sns.stripplot(ax=axes[1], data=train_scaled3, x='cluster3_scaled', y='log_error', cmap = 'flare')
     axes[1].set_title('Scaled')
 
     plt.show()
-    #return train_scaled3
 
 
 def anova_test(df, col):
