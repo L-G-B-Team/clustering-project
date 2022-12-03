@@ -1,10 +1,16 @@
 from env import get_db_url
+import wrangle as w
+import explore as e
+
 import pandas as pd
 import numpy as np
+import scipy.stats as stats
+
 from sklearn.model_selection import train_test_split
-
-
-
+from sklearn.cluster import KMeans
+import seaborn as sns
+import matplotlib.pyplot as plt
+from matplotlib import cm
 
 def get_zillow_data():
     sql_query = '''
@@ -106,3 +112,53 @@ def get_upper_outliers(s, k=1.5):
     
     return s.apply(lambda x: max([x - upper_bound, 0]))
     
+#################################################################################### USE AS IMPORTS 
+
+def viz_for_Q3(train_df):
+    train = train_df
+    
+    #unscaled data
+    X3 = train[['garage_car_count', 'pool_count', 'lot_sqft']]
+    kmeans = KMeans(n_clusters = 4, random_state = 89).fit(X3)
+    train['cluster3'] = kmeans.predict(X3)
+    
+    train_scale = train.copy()
+    #scaled data
+    train_scaled3 = w.scale(train_scale, ['garage_car_count', 'pool_count', 'lot_sqft'])
+    X3_scaled = train_scaled3[['scaled_garage_car_count', 'scaled_pool_count', 'scaled_lot_sqft']]
+    kmeans = KMeans(n_clusters = 4, random_state = 89).fit(X3_scaled)
+    train_scaled3['cluster3_scaled'] = kmeans.predict(X3_scaled)
+    train_scaled3['log_error'] = train['log_error']
+    
+    #viz 
+    fig, axes= plt.subplots(1,2, figsize =(15, 10), sharey = True)
+    fig.subtitle = ('Unscaled vs. Scaled')
+
+    #Unscaled
+    sns.stripplot(ax=axes[0], data = train, x = 'cluster3', y = 'log_error')
+    axes[0].set_title('Unscaled')
+
+    #Scaled
+    sns.stripplot(ax = axes[1],data = train_scaled3, x = 'cluster3_scaled', y = 'log_error')
+    axes[1].set_title('Scaled')
+    
+    plt.show()
+    
+def anova_test(df,col):
+    group_list = [df[df[col] == x].log_error.to_numpy() for x in range(4)]
+    t,p = stats.kruskal(group_list[0],group_list[1],group_list[2],group_list[3])
+    return e.t_to_md(t,p)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
