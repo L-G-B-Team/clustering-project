@@ -120,10 +120,8 @@ def viz_for_Q3(train_df):
 
     train_scale = train.copy()
     # scaled data
-    train_scaled3 = w.scale(
-        train_scale, ['garage_car_count', 'pool_count', 'lot_sqft'])
-    X3_scaled = train_scaled3[[
-        'scaled_garage_car_count', 'scaled_pool_count', 'scaled_lot_sqft']]
+    train_scaled3 = w.scale(train_scale, ['garage_car_count', 'pool_count', 'lot_sqft'])
+    X3_scaled = train_scaled3[['scaled_garage_car_count', 'scaled_pool_count', 'scaled_lot_sqft']]
     kmeans = KMeans(n_clusters=4, random_state=89).fit(X3_scaled)
     train_scaled3['cluster3_scaled'] = kmeans.predict(X3_scaled)
     train_scaled3['log_error'] = train['log_error']
@@ -142,7 +140,7 @@ def viz_for_Q3(train_df):
     axes[1].set_title('Scaled')
 
     plt.show()
-    return train_scaled3
+    #return train_scaled3
 
 
 def anova_test(df, col):
@@ -150,3 +148,20 @@ def anova_test(df, col):
     t, p = stats.kruskal(
         group_list[0], group_list[1], group_list[2], group_list[3])
     return e.t_to_md(t, p)
+
+
+def scaled_3(train_df):
+    train_scaled3 = w.scale(train_df, ['garage_car_count', 'pool_count', 'lot_sqft'])
+    X3_scaled = train_scaled3[['scaled_garage_car_count', 'scaled_pool_count', 'scaled_lot_sqft']]
+    kmeans = KMeans(n_clusters=4, random_state=89).fit(X3_scaled)
+    train_scaled3['cluster3_scaled'] = kmeans.predict(X3_scaled)
+    train_scaled3['log_error'] = train_df['log_error']
+    
+    return train_scaled3
+
+
+
+
+
+
+
