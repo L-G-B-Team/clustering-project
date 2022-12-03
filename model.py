@@ -1,5 +1,5 @@
 '''model contains helper functions to assist in Modeling portion of final_report.ipynb'''
-from typing import Union, Tuple, Dict, List,Callable
+from typing import Union, Tuple, Dict, List, Callable
 
 import numpy as np
 import pandas as pd
@@ -11,30 +11,6 @@ from sklearn.preprocessing import MinMaxScaler
 from wrangle import scale
 import evaluate as ev
 from custom_dtypes import LinearRegressionType, ModelDataType
-
-
-def scale_and_cluster(df: pd.DataFrame, features: List[str],
-                      cluster_cols: List[str],
-                      cluster_name: str, target: Union[pd.Series, None] = None,
-                      scaler: Union[MinMaxScaler, None] = None,
-                      kmeans: Union[KMeans, None] = None,
-                      k: Union[int, None] = None) -> Tuple[pd.DataFrame,
-                                                           MinMaxScaler,
-                                                           KMeans]:
-    # TODO Woody Docstring
-    if scaler is None:
-        scaler = MinMaxScaler()
-        scaler.fit(df[features])
-    return_df = pd.DataFrame(scaler.transform(
-        df[features]), columns=df[features].columns)
-    if kmeans is None:
-        if k is None:
-            raise Exception("KMeans not provided, but k not specified")
-        kmeans = KMeans(k, random_state=420).fit(df[cluster_cols])
-    return_df[cluster_name] = kmeans.predict(df[cluster_cols])
-    if target is not None:
-        pd.concat([return_df, target], axis=1)
-    return return_df,scaler,kmeans
 
 
 def select_baseline(ytrain: pd.Series) -> md:
@@ -140,27 +116,60 @@ def rmse_eval(ytrue: Dict[str, np.array], **kwargs) -> pd.DataFrame:
     return ret_df
 
 
-def apply_to_clusters(features: pd.DataFrame, target: pd.Series,
-                      cluster_col: str,
-                      regressor: Dict[int, LinearRegressionType],
-                      **kwargs) -> pd.DataFrame:
+def scale_and_cluster(df: pd.DataFrame, features: List[str],
+                      cluster_cols: List[str],
+                      cluster_name: str, target: str,
+                      scaler: Union[MinMaxScaler, None] = None,
+                      kmeans: Union[KMeans, None] = None,
+                      k: Union[int, None] = None) -> Tuple[pd.DataFrame,
+                                                           MinMaxScaler,
+                                                           KMeans]:
     # TODO Woody Docstring
-    return_frame = pd.DataFrame({'y_true': target})
-    for cluster in np.unique(features[cluster_col]):
-        cluster_df = features[(features[cluster_col] == cluster)]
-        return_frame['yhat_'+str(cluster)] = regressor.predict(cluster_df)
-    return return_frame
+    if scaler is None:
+        scaler = MinMaxScaler()
+        scaler.fit(df[features])
+    return_df = pd.DataFrame(scaler.transform(
+        df[features]), columns=df[features].columns,index=df[features].index)
+    if kmeans is None:
+        if k is None:
+            raise Exception("KMeans not provided, but k not specified")
+        kmeans = KMeans(k, random_state=420).fit(df[cluster_cols])
+    return_df[cluster_name] = kmeans.predict(df[cluster_cols])
+    return_df[target] = df[target]
+    return return_df, scaler, kmeans
 
 
-def generate_regressor(features: pd.DataFrame,
-                       target: pd.Series,
+def generate_regressor(df:pd.DataFrame,features: List[str],
+                       target:str,
                        cluster_col: str,
                        regressor: Callable,
                        **kwargs) -> Dict[int, Callable]:
     # TODO Woody docstring
     return_dict = {}
-    for cluster in np.unique(features[cluster_col]):
-        x_train = features[features[cluster_col] == cluster]
-        regressor.__init__(kwargs)
-        return_dict[cluster] = regressor.fit(x_train, target)
+    for cluster in np.unique(df[cluster_col]):
+        x_train = df[df[cluster_col] == cluster][features]
+        y_train = df.iloc[x_train.index,cluster_col]
+        regressor = regressor.fit(x_train, y_train)
+        return_dict[cluster] = regressor
+
     return return_dict
+
+
+def apply_to_clusters(df: pd.DataFrame, features: str, target: str,
+                      cluster_col: str,
+                      regressors: Dict[int, LinearRegressionType],
+                      **kwargs) -> pd.DataFrame:
+    # TODO Woody Docstring
+    return_frame = pd.DataFrame()
+    return_frame['y_true'] = df[target]
+    return_frame['y_pred'] = 0.0
+    for cluster, cluster_frame in df.groupby(cluster_col):
+        return_frame.iloc[cluster_frame.index,
+                          1] = regressors[cluster].predict(df[features])
+
+    return return_frame
+
+def process_model(df:pd.DataFrame,features:List[str],target:str,scaler:MinMaxScaler = MinMaxScaler(),kmeans:Union[KMeans,None] = None,k:Union[int,None] = None,
+regressors:Union[List[LinearRegressionType],None] = None)->Tuple[pd.DataFrame,MinMaxScaler,LinearRegressionType]:
+    # TODO Woody Docstring
+    pass
