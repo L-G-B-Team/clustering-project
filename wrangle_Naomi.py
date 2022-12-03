@@ -36,14 +36,6 @@ def get_zillow_data():
     return df
 
 
-
-def get_mall_data():
-    url = env.get_db_url("mall_customers")
-    query = 'SELECT * FROM customers'
-    
-    df = pd.read_sql(query, url)
-    return df.set_index('customer_id')
-
 def split_data(df):
     train_validate, test_df = train_test_split(df, test_size=.2, 
                                         random_state=1989)
@@ -104,13 +96,6 @@ def summarize(df):
     print('---------')
     print('Report Finished')
     
-    
-def get_upper_outliers(s, k=1.5):
-    q1, q3 = s.quantile([0.25, 0.75])
-    iqr = q3 - q1
-    upper_bound = q3 + k*iqr
-    
-    return s.apply(lambda x: max([x - upper_bound, 0]))
     
 #################################################################################### USE AS IMPORTS 
 
