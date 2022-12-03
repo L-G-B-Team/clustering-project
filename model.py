@@ -1,14 +1,40 @@
 '''model contains helper functions to assist in Modeling portion of final_report.ipynb'''
-from typing import Union, Tuple, Dict
+from typing import Union, Tuple, Dict, List
 
 import numpy as np
 import pandas as pd
 from IPython.display import Markdown as md
+from sklearn.cluster import KMeans
 from sklearn.linear_model import LassoLars, LinearRegression, TweedieRegressor
 from sklearn.metrics import mean_squared_error
-
+from sklearn.preprocessing import MinMaxScaler
+from wrangle import scale
 import evaluate as ev
 from custom_dtypes import LinearRegressionType, ModelDataType
+
+
+def scale_and_cluster(df: pd.DataFrame, features: List[str],
+                      cluster_cols: List[str],
+                      cluster_name: str, target: Union[pd.Series, None] = None,
+                      scaler: Union[MinMaxScaler, None] = None,
+                      kmeans: Union[KMeans, None] = None,
+                      k: Union[int, None] = None) -> Tuple[pd.DataFrame,
+                                                           MinMaxScaler,
+                                                           KMeans]:
+    # TODO Woody Docstring
+    if scaler is None:
+        scaler = MinMaxScaler()
+        scaler.fit(df[features])
+    return_df = pd.DataFrame(scaler.transform(
+        df[features]), columns=df[features].columns)
+    if kmeans is None:
+        if k is None:
+            raise Exception("KMeans not provided, but k not specified")
+        kmeans = KMeans(k, random_state=420).fit(df[cluster_cols])
+    return_df[cluster_name] = kmeans.predict(df[cluster_cols])
+    if target is not None:
+        pd.concat([return_df, target], axis=1)
+    return return_df,scaler,kmeans
 
 
 def select_baseline(ytrain: pd.Series) -> md:
@@ -50,7 +76,8 @@ def linear_regression(x: pd.DataFrame, y: pd.DataFrame,
     return ypred, linreg
 
 
-def lasso_lars(x: pd.DataFrame, y: pd.DataFrame, llars: Union[None, LassoLars] = None)\
+def lasso_lars(x: pd.DataFrame, y: pd.DataFrame,
+               llars: Union[None, LassoLars] = None)\
         -> Tuple[np.array, LassoLars]:
     '''runs LASSO+LARS on x and y
     ## Parameters
@@ -58,7 +85,8 @@ def lasso_lars(x: pd.DataFrame, y: pd.DataFrame, llars: Union[None, LassoLars] =
 
     y: DataFrame of target
 
-    llars: Optional LASSO + LARS object, used if model has already been trained, default: None
+    llars: Optional LASSO + LARS object, 
+    used if model has already been trained, default: None
     ## Returns
     ypred: numpy.array of predictions
 
@@ -71,7 +99,8 @@ def lasso_lars(x: pd.DataFrame, y: pd.DataFrame, llars: Union[None, LassoLars] =
     return ypred, llars
 
 
-def lgm(x: pd.DataFrame, y: pd.DataFrame, tweedie: Union[TweedieRegressor, None] = None)\
+def lgm(x: pd.DataFrame, y: pd.DataFrame,
+        tweedie: Union[TweedieRegressor, None] = None)\
         -> Tuple[np.array, TweedieRegressor]:
     '''runs Generalized Linear Model (GLM) on x and y
     ## Parameters
@@ -113,8 +142,8 @@ def rmse_eval(ytrue: Dict[str, np.array], **kwargs) -> pd.DataFrame:
 
 def apply_to_clusters(features: pd.DataFrame, target: pd.Series,
                       cluster_col: str,
-                      regressor: Dict[LinearRegressionType],
-                      **kwargs) -> pd.Dataframe:
+                      regressor: Dict[int,LinearRegressionType],
+                      **kwargs) -> pd.DataFrame:
     # TODO Woody Docstring
     return_frame = pd.DataFrame({'y_true': target})
     for cluster in np.unique(features[cluster_col]):
