@@ -1,5 +1,5 @@
 '''model contains helper functions to assist in Modeling portion of final_report.ipynb'''
-from typing import Union, Tuple, Dict, List
+from typing import Union, Tuple, Dict, List,Callable
 
 import numpy as np
 import pandas as pd
@@ -142,7 +142,7 @@ def rmse_eval(ytrue: Dict[str, np.array], **kwargs) -> pd.DataFrame:
 
 def apply_to_clusters(features: pd.DataFrame, target: pd.Series,
                       cluster_col: str,
-                      regressor: Dict[int,LinearRegressionType],
+                      regressor: Dict[int, LinearRegressionType],
                       **kwargs) -> pd.DataFrame:
     # TODO Woody Docstring
     return_frame = pd.DataFrame({'y_true': target})
@@ -150,3 +150,17 @@ def apply_to_clusters(features: pd.DataFrame, target: pd.Series,
         cluster_df = features[(features[cluster_col] == cluster)]
         return_frame['yhat_'+str(cluster)] = regressor.predict(cluster_df)
     return return_frame
+
+
+def generate_regressor(features: pd.DataFrame,
+                       target: pd.Series,
+                       cluster_col: str,
+                       regressor: Callable,
+                       **kwargs) -> Dict[int, Callable]:
+    # TODO Woody docstring
+    return_dict = {}
+    for cluster in np.unique(features[cluster_col]):
+        x_train = features[features[cluster_col] == cluster]
+        regressor.__init__(kwargs)
+        return_dict[cluster] = regressor.fit(x_train, target)
+    return return_dict
