@@ -1,5 +1,5 @@
 '''model contains helper functions to assist in Modeling portion of final_report.ipynb'''
-from typing import Union,Tuple,Dict
+from typing import Union, Tuple, Dict
 
 import numpy as np
 import pandas as pd
@@ -11,7 +11,7 @@ import evaluate as ev
 from custom_dtypes import LinearRegressionType, ModelDataType
 
 
-def select_baseline(ytrain:pd.Series)->md:
+def select_baseline(ytrain: pd.Series) -> md:
     '''tests mean and median of training data as a baseline metric.
     ## Parameters
     ytrain: `pandas.Series` containing the target variable
@@ -20,14 +20,16 @@ def select_baseline(ytrain:pd.Series)->md:
     '''
     med_base = ytrain.median()
     mean_base = ytrain.mean()
-    mean_eval = ev.regression_errors(ytrain,mean_base,'Mean Baseline')
-    med_eval = ev.regression_errors(ytrain,med_base,'Median Baseline')
-    ret_md = pd.concat([mean_eval,med_eval]).to_markdown()
+    mean_eval = ev.regression_errors(ytrain, mean_base, 'Mean Baseline')
+    med_eval = ev.regression_errors(ytrain, med_base, 'Median Baseline')
+    ret_md = pd.concat([mean_eval, med_eval]).to_markdown()
     ret_md += '\n### Because mean outperformed median on all metrics, \
         we will use mean as our baseline'
     return md(ret_md)
-def linear_regression(x:pd.DataFrame,y:pd.DataFrame,\
-    linreg:Union[LinearRegression,None]=None)->None:
+
+
+def linear_regression(x: pd.DataFrame, y: pd.DataFrame,
+                      linreg: Union[LinearRegression, None] = None) -> None:
     '''runs linear regression on x and y
     ## Parameters
     x: DataFrame of features
@@ -43,11 +45,13 @@ def linear_regression(x:pd.DataFrame,y:pd.DataFrame,\
     '''
     if linreg is None:
         linreg = LinearRegression(normalize=True)
-        linreg.fit(x,y)
+        linreg.fit(x, y)
     ypred = linreg.predict(x)
-    return ypred,linreg
-def lasso_lars(x:pd.DataFrame,y:pd.DataFrame,llars:Union[None,LassoLars] = None)\
-    ->Tuple[np.array,LassoLars]:
+    return ypred, linreg
+
+
+def lasso_lars(x: pd.DataFrame, y: pd.DataFrame, llars: Union[None, LassoLars] = None)\
+        -> Tuple[np.array, LassoLars]:
     '''runs LASSO+LARS on x and y
     ## Parameters
     x: Dataframe of features
@@ -62,11 +66,13 @@ def lasso_lars(x:pd.DataFrame,y:pd.DataFrame,llars:Union[None,LassoLars] = None)
     '''
     if llars is None:
         llars = LassoLars(alpha=3.0)
-        llars.fit(x,y)
+        llars.fit(x, y)
     ypred = llars.predict(x)
-    return ypred,llars
-def lgm(x:pd.DataFrame,y:pd.DataFrame, tweedie:Union[TweedieRegressor,None] = None)\
-    ->Tuple[np.array,TweedieRegressor]:
+    return ypred, llars
+
+
+def lgm(x: pd.DataFrame, y: pd.DataFrame, tweedie: Union[TweedieRegressor, None] = None)\
+        -> Tuple[np.array, TweedieRegressor]:
     '''runs Generalized Linear Model (GLM) on x and y
     ## Parameters
     x: `DataFrame` of features
@@ -80,11 +86,13 @@ def lgm(x:pd.DataFrame,y:pd.DataFrame, tweedie:Union[TweedieRegressor,None] = No
     tweedie: `TweedieRegressor` model trained on data.
     '''
     if tweedie is None:
-        tweedie = TweedieRegressor(power=0,alpha=3.0)
-        tweedie.fit(x,y)
+        tweedie = TweedieRegressor(power=0, alpha=3.0)
+        tweedie.fit(x, y)
     ypred = tweedie.predict(x)
     return ypred, tweedie
-def rmse_eval(ytrue:Dict[str,np.array],**kwargs)->pd.DataFrame:
+
+
+def rmse_eval(ytrue: Dict[str, np.array], **kwargs) -> pd.DataFrame:
     '''
     performs Root Mean Squared evaluation on parameters
     ## Parameters
@@ -96,9 +104,10 @@ def rmse_eval(ytrue:Dict[str,np.array],**kwargs)->pd.DataFrame:
     a `pandas.DataFrame` of Root Mean Squared Evaluation for each dataset in kwargs.
     '''
     ret_df = pd.DataFrame()
-    for key,value in kwargs.items():
-        for k_key,v_value in value.items():
-            ret_df.loc[key,k_key] = np.round(np.sqrt(mean_squared_error(ytrue[k_key],v_value)),2)
+    for key, value in kwargs.items():
+        for k_key, v_value in value.items():
+            ret_df.loc[key, k_key] = np.round(
+                np.sqrt(mean_squared_error(ytrue[k_key], v_value)), 2)
     return ret_df
 
 
@@ -112,5 +121,3 @@ def apply_to_clusters(features: pd.DataFrame, target: pd.Series,
         cluster_df = features[(features[cluster_col] == cluster)]
         return_frame['yhat_'+str(cluster)] = regressor.predict(cluster_df)
     return return_frame
-
-
