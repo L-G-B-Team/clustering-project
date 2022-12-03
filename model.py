@@ -165,8 +165,9 @@ def apply_to_clusters(df: pd.DataFrame, features: str, target: str,
     predictions_df['y_true'] = df.log_error
     predictions_df['y_pred'] = 1.0
     cluster_group = df.groupby(cluster_col)
-    for i,group in cluster_group:
-        predictions_df.iloc[group.index,1] = regressors[i].predict(group[features])
+    for i, group in cluster_group:
+        predictions_df.iloc[group.index,
+                            1] = regressors[i].predict(group[features])
 
     return predictions_df
 
