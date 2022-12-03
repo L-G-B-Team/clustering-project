@@ -1,5 +1,6 @@
-'''model contains helper functions to assist in Modeling portion of final_report.ipynb'''
-from typing import Union, Tuple, Dict, List, Callable
+'''model contains helper functions to assist in Modeling
+portion of final_report.ipynb'''
+from typing import Union, Tuple, Dict
 
 import numpy as np
 import pandas as pd
@@ -61,8 +62,8 @@ def lasso_lars(x: pd.DataFrame, y: pd.DataFrame,
 
     y: DataFrame of target
 
-    llars: Optional LASSO + LARS object, 
-    used if model has already been trained, default: None
+    llars: Optional LASSO + LARS object, used if model has
+    already been trained, default: None
     ## Returns
     ypred: numpy.array of predictions
 
@@ -84,7 +85,8 @@ def lgm(x: pd.DataFrame, y: pd.DataFrame,
 
     y: 'DataFrame' of target
 
-    tweedie: `TweedieRegressor` object, used if model has already been trained, default: None
+    tweedie: `TweedieRegressor` object, used if model has already been trained,
+    default: None
     ## Returns
     ypred: numpy.array of predictions
 
@@ -97,16 +99,20 @@ def lgm(x: pd.DataFrame, y: pd.DataFrame,
     return ypred, tweedie
 
 
-def rmse_eval(ytrue: Dict[str, np.array], **kwargs) -> pd.DataFrame:
+def rmse_eval(ytrue: Dict[str, np.array],
+              **kwargs) -> pd.DataFrame:
     '''
     performs Root Mean Squared evaluation on parameters
     ## Parameters
-    ytrue: a dictionary of `numpy.array` containing the true Y values on which to evaluate
+    ytrue: a dictionary of `numpy.array` containing the true Y values
+    on which to evaluate
     kwargs: named dictionary of `numpy.array` objects
         with predicted y values where for each key:value
-    pain in ytrue there is a corresponding key:value pair in `kwargs[REGRESSION FUNCTION NAME]`
+    pain in ytrue there is a corresponding key:value pair in
+    `kwargs[REGRESSION FUNCTION NAME]`
     ## Returns
-    a `pandas.DataFrame` of Root Mean Squared Evaluation for each dataset in kwargs.
+    a `pandas.DataFrame` of Root Mean Squared Evaluation
+    for each dataset in kwargs.
     '''
     ret_df = pd.DataFrame()
     for key, value in kwargs.items():
@@ -114,65 +120,3 @@ def rmse_eval(ytrue: Dict[str, np.array], **kwargs) -> pd.DataFrame:
             ret_df.loc[key, k_key] = np.round(
                 np.sqrt(mean_squared_error(ytrue[k_key], v_value)), 2)
     return ret_df
-
-
-def scale_and_cluster(df: pd.DataFrame, features: List[str],
-                      cluster_cols: List[str],
-                      cluster_name: str, target: str,
-                      scaler: Union[MinMaxScaler, None] = None,
-                      kmeans: Union[KMeans, None] = None,
-                      k: Union[int, None] = None) -> Tuple[pd.DataFrame,
-                                                           MinMaxScaler,
-                                                           KMeans]:
-    # TODO Woody Docstring
-    if scaler is None:
-        scaler = MinMaxScaler()
-        scaler.fit(df[features])
-    return_df = pd.DataFrame(scaler.transform(
-        df[features]), columns=df[features].columns, index=df.index)
-    if kmeans is None:
-        if k is None:
-            raise Exception("KMeans not provided, but k not specified")
-        kmeans = KMeans(k, random_state=420).fit(df[cluster_cols])
-    return_df[cluster_name] = kmeans.predict(df[cluster_cols])
-    return_df[target] = df[target]
-    return return_df, scaler, kmeans
-
-
-def generate_regressor(df: pd.DataFrame, features: List[str],
-                       target: str,
-                       cluster_col: str,
-                       regressor: Callable,
-                       **kwargs) -> Dict[int, Callable]:
-    # TODO Woody docstring
-    return_dict = {}
-    for cluster in np.unique(df[cluster_col]):
-        x_train = df[df[cluster_col] == cluster][features]
-        y_train = df[df[cluster_col] == cluster][[target]]
-        regressor = regressor.fit(x_train, y_train)
-        return_dict[cluster] = regressor
-
-    return return_dict
-
-
-def apply_to_clusters(df: pd.DataFrame, features: str, target: str,
-                      cluster_col: str,
-                      regressors: Dict[int, LinearRegressionType],
-                      **kwargs) -> pd.DataFrame:
-    # TODO Woody Docstring
-
-    predictions_df = pd.DataFrame()
-    predictions_df['y_true'] = df.log_error
-    predictions_df['y_pred'] = 1.0
-    cluster_group = df.groupby(cluster_col)
-    for i, group in cluster_group:
-        predictions_df.iloc[group.index,
-                            1] = regressors[i].predict(group[features])
-
-    return predictions_df
-
-
-def process_model(df: pd.DataFrame, features: List[str], target: str, scaler: MinMaxScaler = MinMaxScaler(), kmeans: Union[KMeans, None] = None, k: Union[int, None] = None,
-                  regressors: Union[List[LinearRegressionType], None] = None) -> Tuple[pd.DataFrame, MinMaxScaler, LinearRegressionType]:
-    # TODO Woody Docstring
-    pass
