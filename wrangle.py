@@ -300,7 +300,11 @@ def tvt_split(dframe: pd.DataFrame, stratify: Union[str, None] = None,
         test = test.sample(frac=sample)
 
     return train, validate, test
-
+############################################ Naomi wrote this one
+def split_view(train, validate, test):
+    print("train observations: ", train.shape)
+    print("validate observations: ", validate.shape)
+    print("test observations: ", test.shape) 
 
 def get_scaled_copy(dframe: pd.DataFrame,
                     x: List[str], scaled_data: np.ndarray) -> pd.DataFrame:

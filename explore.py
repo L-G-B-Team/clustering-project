@@ -76,6 +76,8 @@ def anova_test(df: pd.DataFrame, col: str):
 def create_clusters_pool_garage_lot_sqft(x_train: pd.DataFrame, k: int):
     # TODO Naomi check this works and approve docstring
     # I took out cluster_vars from the parameters and renamed the function
+    
+    ### Naomi feedback, Does not return clusters as I know what to do with them. Returns n_clusters and random_state
     '''
     Marks K-Means on pool count, garage car count, and lot square feet
     ## Parameters
@@ -127,13 +129,15 @@ def generate_elbow(df: pd.DataFrame, k_min: int = 1, k_max: int = 30) -> None:
 
 def viz_for_Q3(train_df: pd.DataFrame) -> None:
     # TODO Naomi double check the docstring I wrote for this
+    
+    ### Naomi feedback: checked and updated 
     '''
     Generates visualizations of both scaled and unscaled clusters
     of garage car count, pool count, and lot square feet
     ## Parameters
     train_df: `DataFrame` containing training data.
     ## Returns
-    None
+    updated train_df with new column cluser3 and visusal showing difference between scaled and unscaled data
     '''
     # unscaled data
     x3_unscaled = train_df[['garage_car_count', 'pool_count', 'lot_sqft']]
