@@ -129,7 +129,7 @@ def scale_and_cluster(df: pd.DataFrame, features: List[str],
         scaler = MinMaxScaler()
         scaler.fit(df[features])
     return_df = pd.DataFrame(scaler.transform(
-        df[features]), columns=df[features].columns,index=df[features].index)
+        df[features]), columns=df[features].columns, index=df.index)
     if kmeans is None:
         if k is None:
             raise Exception("KMeans not provided, but k not specified")
@@ -139,8 +139,8 @@ def scale_and_cluster(df: pd.DataFrame, features: List[str],
     return return_df, scaler, kmeans
 
 
-def generate_regressor(df:pd.DataFrame,features: List[str],
-                       target:str,
+def generate_regressor(df: pd.DataFrame, features: List[str],
+                       target: str,
                        cluster_col: str,
                        regressor: Callable,
                        **kwargs) -> Dict[int, Callable]:
@@ -148,7 +148,7 @@ def generate_regressor(df:pd.DataFrame,features: List[str],
     return_dict = {}
     for cluster in np.unique(df[cluster_col]):
         x_train = df[df[cluster_col] == cluster][features]
-        y_train = df.iloc[x_train.index,cluster_col]
+        y_train = df[df[cluster_col] == cluster][[target]]
         regressor = regressor.fit(x_train, y_train)
         return_dict[cluster] = regressor
 
@@ -160,16 +160,17 @@ def apply_to_clusters(df: pd.DataFrame, features: str, target: str,
                       regressors: Dict[int, LinearRegressionType],
                       **kwargs) -> pd.DataFrame:
     # TODO Woody Docstring
-    return_frame = pd.DataFrame()
-    return_frame['y_true'] = df[target]
+
+    return_frame = df.copy()
     return_frame['y_pred'] = 0.0
     for cluster, cluster_frame in df.groupby(cluster_col):
-        return_frame.iloc[cluster_frame.index,
-                          1] = regressors[cluster].predict(df[features])
+        return_frame.loc[return_frame[cluster_col] == cluster,
+                         'y_pred'] = regressors[cluster].predict(df[df[cluster_col] == cluster][features])
 
     return return_frame
 
-def process_model(df:pd.DataFrame,features:List[str],target:str,scaler:MinMaxScaler = MinMaxScaler(),kmeans:Union[KMeans,None] = None,k:Union[int,None] = None,
-regressors:Union[List[LinearRegressionType],None] = None)->Tuple[pd.DataFrame,MinMaxScaler,LinearRegressionType]:
+
+def process_model(df: pd.DataFrame, features: List[str], target: str, scaler: MinMaxScaler = MinMaxScaler(), kmeans: Union[KMeans, None] = None, k: Union[int, None] = None,
+                  regressors: Union[List[LinearRegressionType], None] = None) -> Tuple[pd.DataFrame, MinMaxScaler, LinearRegressionType]:
     # TODO Woody Docstring
     pass
