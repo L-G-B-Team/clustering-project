@@ -5,10 +5,10 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from IPython.display import Markdown as md
+from scipy import stats
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import MinMaxScaler, RobustScaler
 
-import env
 import wrangle as w
 
 warnings.filterwarnings('ignore')
@@ -53,8 +53,15 @@ def t_to_md(p:float,t:float,alpha:float=.05,**kwargs):
             f'we {"failed to " if ~(t_flag & p_flag) else ""} reject $H_0$'
     return md(ret_str)
 
-def anova_test(df,col):
-    group_list = [train[train[col] == x].log_error.to_numpy() for x in range(4)]
+def anova_test(df:pd.DataFrame,col:str):
+    '''
+    TODO 
+    ## Parameters
+    
+    ## Returns
+    
+    '''
+    group_list = [df[df[col] == x].log_error.to_numpy() for x in range(4)]
     t,p = stats.kruskal(group_list[0],group_list[1],group_list[2],group_list[3])
     #cluster_3 = df[df.cluster3== 3]
     return e.t_to_md(t,p)
@@ -76,6 +83,13 @@ def create_clusters_Q3(X_train, k, cluster_vars):
     return kmeans
 
 def generate_elbow(df:pd.DataFrame,k_min:int = 1,k_max:int = 30)->None:
+    '''
+    TODO Woody
+    ## Parameters
+    
+    ## Returns
+    
+    '''
     inertia = {i:KMeans(i,random_state=420).fit(df).inertia_ for i in range(k_min,k_max)}
     fig,axs = plt.subplots(1,2,figsize=(12,5))
     sns.lineplot(data=inertia,ax=axs[0])
@@ -89,8 +103,14 @@ def generate_elbow(df:pd.DataFrame,k_min:int = 1,k_max:int = 30)->None:
     axs[1].set_title('% Change')
     fig.tight_layout()
     plt.show()
-def viz_for_Q3(train_df):
-    
+def viz_for_Q3(train_df:pd.DataFrame)->None:
+    '''
+    TODO Naomi
+    ## Parameters
+    train_df: `DataFrame` containing training data.
+    ## Returns
+    None
+    '''
     #unscaled data
     X3 = train_df[['garage_car_count', 'pool_count', 'lot_sqft']]
     kmeans = KMeans(n_clusters = 4).fit(X3)
@@ -129,14 +149,14 @@ def cluster_fun(df:pd.DataFrame)->pd.DataFrame:
     for feature in all_features:
         for feature2 in all_features:
             if feature != feature2:
-                cluster_fun = cluster_test[[feature, feature2]]
+                features_cluster = cluster_test[[feature, feature2]]
 
                 #Fit a new model to my scaled data
                 kmeans_scale = KMeans(n_clusters=4)
 
-                kmeans_scale.fit(cluster_fun)
+                kmeans_scale.fit(features_cluster)
                 cluster_name = feature +'_'+ feature2 + '_cluster'
-                cluster_test[cluster_name] = kmeans_scale.predict(cluster_fun)
+                cluster_test[cluster_name] = kmeans_scale.predict(features_cluster)
                 plt.title(f'{feature} and {feature2} cluster')
                 sns.scatterplot(y='log_error', x=cluster_name,
                         palette='colorblind', data=cluster_test)
@@ -145,6 +165,13 @@ def cluster_fun(df:pd.DataFrame)->pd.DataFrame:
 
 
 def tax_sqft_plot(df:pd.DataFrame)->None:
+    '''
+    TODO Woody
+    ## Parameters
+    
+    ## Returns
+    
+    '''
     sns.set_palette('magma')
     fig,axs = plt.subplots(1,2)
     df.log_error = df.log_error.astype('float')
@@ -158,6 +185,13 @@ def tax_sqft_plot(df:pd.DataFrame)->None:
     axs[1].set_title('Abs. Val of Log Error >= 1')
     plt.show()
 def tax_sqft_cluster_plot(train:pd.DataFrame)->None:
+    '''
+    TODO Woody
+    ## Parameters
+    
+    ## Returns
+    
+    '''
     tax_sqft = train[['calc_sqft','tax_value']]
     tax_sqft['calc_sqft'] = train['calc_sqft']
     tax_sqft['tax_value'] = train['tax_value']
