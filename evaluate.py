@@ -1,10 +1,11 @@
 '''evaluate contains helper functions to assist in evaluation of models'''
-from typing import Union,List
+from typing import Union, List
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import model as m
 from sklearn.metrics import mean_squared_error
 
 from custom_dtypes import ModelDataType, lmplot_kwargs
@@ -107,11 +108,13 @@ def regression_errors(y_true: ModelDataType, y_pred: Union[ModelDataType, float]
     ret_frame = pd.DataFrame(ret_dict, index=[title])
     return ret_frame
 
-def get_errors(predictions:List[pd.DataFrame],labels:List[str]):
+
+def get_errors(predictions: List[pd.DataFrame], labels: List[str]):
     if len(labels) != len(predictions):
         raise Exception("predictions and labels must be the same length")
     errors = []
-    for prediction in zip(predictions,labels):
-       error = regression_errors(prediction[0].y_true,prediction[0].y_pred,prediction[1])
-       errors.append(error)
+    for prediction in zip(predictions, labels):
+        error = regression_errors(
+            prediction[0].y_true, prediction[0].y_pred, prediction[1])
+        errors.append(error)
     return pd.concat(errors)
