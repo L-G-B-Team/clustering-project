@@ -58,7 +58,7 @@ def t_to_md(p: float, t: float, alpha: float = .05, **kwargs):
     return md(ret_str)
 
 
-def anova_test(df: pd.DataFrame, col: str)->md:
+def anova_test(df: pd.DataFrame, col: str) -> md:
     '''
     Nicely displays the results of and runs anova stat test
     ## Parameters
