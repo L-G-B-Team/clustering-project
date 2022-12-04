@@ -60,9 +60,11 @@ def t_to_md(p: float, t: float, alpha: float = .05, **kwargs):
 
 def anova_test(df: pd.DataFrame, col: str):
     # TODO Naomi: change to new stats test and fill in docstring
+    ## Naomi feedback, will use another stat test, but not delete this one. Docstring filled.
     '''
+    Nicely displays the results of and runs anova stat test
     ## Parameters
-
+    X-train dataframe containing 
     ## Returns
 
     '''
