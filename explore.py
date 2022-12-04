@@ -137,7 +137,8 @@ def viz_for_Q3(train_df: pd.DataFrame) -> None:
     ## Parameters
     train_df: `DataFrame` containing training data.
     ## Returns
-    updated train_df with new column cluser3 and visusal showing difference between scaled and unscaled data
+    updated train_df with new column cluser3 and visusal showing
+    difference between scaled and unscaled data
     '''
     # unscaled data
     x3_unscaled = train_df[['garage_car_count', 'pool_count', 'lot_sqft']]
@@ -211,15 +212,15 @@ def tax_sqft_plot(df: pd.DataFrame) -> None:
     None (plots values to Jupyter notebook)
     '''
     sns.set_palette('magma')
-    fig, axs = plt.subplots(1, 2)
+    fig, axs = plt.subplots(1, 2,figsize=(12,5),sharex=True,sharey=True)
     df.log_error = df.log_error.astype('float')
     sns.scatterplot(data=df, x='calc_sqft', y='tax_value',
                     hue='log_error', ax=axs[0],
-                    palette='magma').set(yscale='log')
+                    palette='magma')
     calc = df[np.abs(df.log_error) >= 1]
     sns.scatterplot(data=calc, x='calc_sqft', y='tax_value',
                     hue='log_error', ax=axs[1],
-                    palette='magma').set(yscale='log')
+                    palette='magma')
     fig.suptitle('Tax Value vs. Calculated Sqft.')
     axs[0].set_title('All Data')
     axs[1].set_title('Abs. Val of Log Error >= 1')
