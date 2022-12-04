@@ -1,16 +1,15 @@
-from env import get_db_url
-import wrangle as w
-import explore as e
-
-import pandas as pd
-import numpy as np
-import scipy.stats as stats
-
-from sklearn.model_selection import train_test_split
-from sklearn.cluster import KMeans
-import seaborn as sns
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import scipy.stats as stats
+import seaborn as sns
 from matplotlib import cm
+from sklearn.cluster import KMeans
+from sklearn.model_selection import train_test_split
+
+import explore as e
+import wrangle as w
+from env import get_db_url
 
 
 def get_zillow_data():
@@ -37,7 +36,6 @@ def get_zillow_data():
     return df
 
 
-
 def split_data(df):
     train_validate, test_df = train_test_split(df, test_size=.2,
                                                random_state=1989)
@@ -46,7 +44,7 @@ def split_data(df):
     return train_df, validate_df, test_df
 
 
-def nulls_by_row(df):
+def nulls_by_row(df: pd.DataFrame) -> pd.DataFrame:
     num_missing = df.isnull().sum(axis=1)
     prnt_miss = num_missing / df.shape[1] * 100
     rows_missing = pd.DataFrame(
@@ -60,7 +58,7 @@ def nulls_by_row(df):
     return rows_missing
 
 
-def nulls_by_col(df):
+def nulls_by_col(df: pd.DataFrame) -> pd.DataFrame:
     num_missing = df.isnull().sum()
     percnt_miss = num_missing / df.shape[0] * 100
     cols_missing = pd.DataFrame(
@@ -71,7 +69,7 @@ def nulls_by_col(df):
     return cols_missing
 
 
-def summarize(df):
+def summarize(df: pd.DataFrame) -> None:
     print('DataFrame head: \n')
     print(df.head())
     print('----------')
@@ -100,7 +98,7 @@ def summarize(df):
     print('Report Finished')
 
 
-def get_upper_outliers(s, k=1.5):
+def get_upper_outliers(s: pd.DataFrame, k: float = 1.5):
     q1, q3 = s.quantile([0.25, 0.75])
     iqr = q3 - q1
     upper_bound = q3 + k*iqr
@@ -109,57 +107,17 @@ def get_upper_outliers(s, k=1.5):
 
 # USE AS IMPORTS
 
+# TODO Functions moved to explore.py. Delete these functions one by one
+# and replace with e.Xxx(XXX)
+
 
 def viz_for_Q3(train_df):
-    train = train_df
-
-    # unscaled data
-    X3 = train[['garage_car_count', 'pool_count', 'lot_sqft']]
-    kmeans = KMeans(n_clusters=4, random_state=89).fit(X3)
-    train['cluster3'] = kmeans.predict(X3)
-
-    train_scale = train.copy()
-    # scaled data
-    train_scaled3 = w.scale(train_scale, ['garage_car_count', 'pool_count', 'lot_sqft'])
-    X3_scaled = train_scaled3[['scaled_garage_car_count', 'scaled_pool_count', 'scaled_lot_sqft']]
-    kmeans = KMeans(n_clusters=4, random_state=89).fit(X3_scaled)
-    train_scaled3['cluster3_scaled'] = kmeans.predict(X3_scaled)
-    train_scaled3['log_error'] = train['log_error']
-
-    # viz
-    fig, axes = plt.subplots(1, 2, figsize=(15, 10), sharey=True)
-    fig.subtitle = ('Unscaled vs. Scaled')
-
-    # Unscaled
-    sns.stripplot(ax=axes[0], data=train, x='cluster3', y='log_error', cmap= 'flare')
-    axes[0].set_title('Unscaled')
-
-    # Scaled
-    sns.stripplot(ax=axes[1], data=train_scaled3, x='cluster3_scaled', y='log_error', cmap = 'flare')
-    axes[1].set_title('Scaled')
-
-    plt.show()
+    return e.viz_for_Q3(train_df)
 
 
 def anova_test(df, col):
-    group_list = [df[df[col] == x].log_error.to_numpy() for x in range(4)]
-    t, p = stats.kruskal(
-        group_list[0], group_list[1], group_list[2], group_list[3])
-    return e.t_to_md(t, p)
+    return e.anova_test(df, col)
 
 
 def scaled_3(train_df):
-    train_scaled3 = w.scale(train_df, ['garage_car_count', 'pool_count', 'lot_sqft'])
-    X3_scaled = train_scaled3[['scaled_garage_car_count', 'scaled_pool_count', 'scaled_lot_sqft']]
-    kmeans = KMeans(n_clusters=4, random_state=89).fit(X3_scaled)
-    train_scaled3['cluster3_scaled'] = kmeans.predict(X3_scaled)
-    train_scaled3['log_error'] = train_df['log_error']
-    
-    return train_scaled3
-
-
-
-
-
-
-
+    return e.scaled_3(train_df)

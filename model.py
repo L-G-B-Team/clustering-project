@@ -1,6 +1,6 @@
 '''model contains helper functions to
 assist in Modeling portion of final_report.ipynb'''
-from typing import Union, Tuple, Dict, Callable, List
+from typing import Callable, Dict, List, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -9,12 +9,13 @@ from sklearn.cluster import KMeans
 from sklearn.linear_model import LassoLars, LinearRegression, TweedieRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import MinMaxScaler
-from wrangle import scale
+
 import evaluate as ev
 from custom_dtypes import LinearRegressionType, ModelDataType
+from wrangle import scale
 
 
-def select_baseline(ytrain: pd.Series) -> Tuple[md,pd.DataFrame]:
+def select_baseline(ytrain: pd.Series) -> Tuple[md, pd.DataFrame]:
     '''tests mean and median of training data as a baseline metric.
     # Parameters
     ytrain: `pandas.Series` containing the target variable
@@ -28,7 +29,7 @@ def select_baseline(ytrain: pd.Series) -> Tuple[md,pd.DataFrame]:
     ret_md = pd.concat([mean_eval, med_eval]).to_markdown()
     ret_md += '\n### Because mean outperformed median on all metrics, \
         we will use mean as our baseline'
-    return md(ret_md),mean_eval
+    return md(ret_md), mean_eval
 
 
 def linear_regression(x: pd.DataFrame, y: pd.DataFrame,
@@ -196,7 +197,8 @@ def process_model(df: pd.DataFrame, features: List[str], target: str,
     df = df.reset_index(drop=True)
     scaled_clustered_df, scaler, kmeans = scale_and_cluster(
         df=df, features=features, cluster_cols=cluster_cols,
-        cluster_name=cluster_name, target=target, k=k, scaler=scaler, kmeans=kmeans)
+        cluster_name=cluster_name, target=target,
+        k=k, scaler=scaler, kmeans=kmeans)
     if isinstance(regressor, (LinearRegression, TweedieRegressor, LassoLars)):
         regressor = generate_regressor(
             scaled_clustered_df, features, target, cluster_name, regressor)
@@ -209,6 +211,7 @@ def process_model(df: pd.DataFrame, features: List[str], target: str,
 
 
 def train_and_validate_errors(train: pd.DataFrame, validate: pd.DataFrame):
+    # TODO Woody Docstring
     modeling_vars = ['fireplace_count', 'latitude',
                      'longitude', 'tax_value', 'calc_sqft', 'log_error']
     training = train[modeling_vars]
