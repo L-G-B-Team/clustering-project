@@ -187,6 +187,16 @@ def viz_for_Q3(train_df: pd.DataFrame) -> None:
 
     plt.show()
 
+def scaled_3(train_df):
+    train_scaled3 = w.scale(train_df, ['garage_car_count', 'pool_count', 'lot_sqft'])
+    X3_scaled = train_scaled3[['scaled_garage_car_count', 'scaled_pool_count', 'scaled_lot_sqft']]
+    kmeans = KMeans(n_clusters=4, random_state=89).fit(X3_scaled)
+    train_scaled3['cluster3_scaled'] = kmeans.predict(X3_scaled)
+    train_scaled3['log_error'] = train_df['log_error']
+    
+    return train_scaled3
+
+
 
 def cluster_creator(df: pd.DataFrame) -> pd.DataFrame:
     '''
