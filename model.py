@@ -191,8 +191,8 @@ def process_model(df: pd.DataFrame, features: List[str], target: str,
     df = df.copy()
     return_index = df.index
     df_min = df[target].min()
-    if df_min < 0:
-        df[target] = df[target] - df_min
+    # if df_min < 0:
+    #     df[target] = df[target] - df_min
     df = df.reset_index(drop=True)
     scaled_clustered_df, scaler, kmeans = scale_and_cluster(
         df=df, features=features, cluster_cols=cluster_cols,
@@ -204,6 +204,7 @@ def process_model(df: pd.DataFrame, features: List[str], target: str,
         scaled_clustered_df, features, target, cluster_name, regressor)
     df.index = return_index
     y_predictions.index = return_index
+    # y_predictions.y_pred = y_predictions.y_pred + df_min
     return y_predictions, scaler, kmeans, regressor
 
 
@@ -219,7 +220,7 @@ def train_and_validate_errors(train: pd.DataFrame, validate: pd.DataFrame):
     k = 1
     kmeans = None
     scaler = None
-    regressor = TweedieRegressor(power=1, alpha=1.0)
+    regressor = TweedieRegressor(power=0, alpha=1.0)
     current_df = training
     tweedie_train_predictions, scaler, kmeans, regressor = process_model(
         df=current_df, features=features,
