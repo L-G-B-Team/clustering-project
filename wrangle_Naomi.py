@@ -11,7 +11,6 @@ import explore as e
 import wrangle as w
 from env import get_db_url
 
-
 def get_zillow_data():
     sql_query = '''
     SELECT *
