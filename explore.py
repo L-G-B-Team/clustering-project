@@ -112,21 +112,22 @@ def generate_elbow(df: pd.DataFrame, k_min: int = 1, k_max: int = 30) -> None:
     ## Returns
     None (plots graph to Jupyter notebook)
     '''
-    inertia = {i: KMeans(i, random_state=420).fit(
-        df).inertia_ for i in range(k_min, k_max)}
-    fig, axs = plt.subplots(1, 2, figsize=(12, 5))
-    sns.lineplot(data=inertia, ax=axs[0])
-    axs[0].set_title('Inertia')
-    axs[0].set_xlabel('No. of Clusters')
-    axs[0].set_ylabel('Inertia')
-    pct_change = [((inertia[i]-inertia[i+1])/inertia[i])
-                  * 100 for i in range(k_min, k_max-1)]
-    sns.lineplot(data=pct_change, ax=axs[1])
-    axs[1].set_xlabel('No. of Clusters')
-    axs[1].set_ylabel('% of Change')
-    axs[1].set_title('% Change')
-    fig.tight_layout()
-    plt.show()
+    with plt.style.context('seaborn-whitegrid'):
+        inertia = {i: KMeans(i, random_state=420).fit(
+            df).inertia_ for i in range(k_min, k_max)}
+        fig, axs = plt.subplots(1, 2, figsize=(12, 5))
+        sns.lineplot(data=inertia, ax=axs[0])
+        axs[0].set_title('Inertia')
+        axs[0].set_xlabel('No. of Clusters')
+        axs[0].set_ylabel('Inertia')
+        pct_change = [((inertia[i]-inertia[i+1])/inertia[i])
+                    * 100 for i in range(k_min, k_max-1)]
+        sns.lineplot(data=pct_change, ax=axs[1])
+        axs[1].set_xlabel('No. of Clusters')
+        axs[1].set_ylabel('% of Change')
+        axs[1].set_title('% Change')
+        fig.tight_layout()
+        plt.show()
 
 
 def elbow_for_Q3(train_scaled3):
@@ -263,6 +264,6 @@ def tax_sqft_cluster_plot(train: pd.DataFrame) -> None:
     tax_sqft['log_error'] = train.log_error
     sns.set_palette('magma')
     g = sns.FacetGrid(data=tax_sqft, col='tax_sqft_cluster',
-                      col_wrap=2, sharey=True).set(yscale='log')
+                      col_wrap=3, sharey=True).set(yscale='log')
     g.map_dataframe(sns.histplot, x='log_error')
     plt.show()
