@@ -186,7 +186,7 @@ def process_model(df: pd.DataFrame, features: List[str], target: str,
                   kmeans: Union[KMeans, None] = None,
                   k: Union[int, None] = None,
                   ) -> Tuple[pd.DataFrame, MinMaxScaler,
-                             KMeans, Dict[int,LinearRegressionType]]:
+                             KMeans, Dict[int, LinearRegressionType]]:
     # TODO Woody Docstring
     return_index = df.index
     df_min = df[target].min()
@@ -194,7 +194,7 @@ def process_model(df: pd.DataFrame, features: List[str], target: str,
         df[target] = df[target] - df_min
     df = df.reset_index(drop=True)
     scaled_clustered_df, scaler, kmeans = scale_and_cluster(
-        df=df, features=features, cluster_cols=cluster_cols, 
+        df=df, features=features, cluster_cols=cluster_cols,
         cluster_name=cluster_name, target=target, k=k)
     if ~isinstance(LinearRegressionType, list):
         regressor = generate_regressor(
@@ -203,4 +203,4 @@ def process_model(df: pd.DataFrame, features: List[str], target: str,
         scaled_clustered_df, features, target, cluster_name, regressor)
     df.index = return_index
     y_predictions.index = return_index
-    return y_predictions,scaler,kmeans,regressor
+    return y_predictions, scaler, kmeans, regressor
