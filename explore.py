@@ -58,14 +58,15 @@ def t_to_md(p: float, t: float, alpha: float = .05, **kwargs):
     return md(ret_str)
 
 
-def anova_test(df: pd.DataFrame, col: str) -> md:
+def anova_test(df: pd.DataFrame, col: str):
+    # TODO Naomi: change to new stats test and fill in docstring
+    ## Naomi feedback, will use another stat test, but not delete this one. Docstring filled.
     '''
     Nicely displays the results of and runs anova stat test
     ## Parameters
-    X-train: `DataFrame` containing xtrain data to edit
-    col: returns
+    X-train dataframe containing 
     ## Returns
-    Formatted `Markdown` object of Kruskal results
+
     '''
     group_list = [df[df[col] == x].log_error.to_numpy() for x in range(4)]
     t, p = stats.kruskal(
@@ -75,6 +76,10 @@ def anova_test(df: pd.DataFrame, col: str) -> md:
 
 
 def create_clusters_pool_garage_lot_sqft(x_train: pd.DataFrame, k: int):
+    # TODO Naomi check this works and approve docstring
+    # I took out cluster_vars from the parameters and renamed the function
+    
+    ### Naomi feedback, Does not return clusters as I know what to do with them. Returns n_clusters and random_state
     '''
     Marks K-Means on pool count, garage car count, and lot square feet
     ## Parameters
@@ -116,7 +121,7 @@ def generate_elbow(df: pd.DataFrame, k_min: int = 1, k_max: int = 30) -> None:
         axs[0].set_xlabel('No. of Clusters')
         axs[0].set_ylabel('Inertia')
         pct_change = [((inertia[i]-inertia[i+1])/inertia[i])
-                      * 100 for i in range(k_min, k_max-1)]
+                    * 100 for i in range(k_min, k_max-1)]
         sns.lineplot(data=pct_change, ax=axs[1])
         axs[1].set_xlabel('No. of Clusters')
         axs[1].set_ylabel('% of Change')
@@ -125,28 +130,25 @@ def generate_elbow(df: pd.DataFrame, k_min: int = 1, k_max: int = 30) -> None:
         plt.show()
 
 
-def elbow_for_Q3(train_scaled3: pd.DataFrame) -> None:
-    # TODO Naomi changed this to return generate_elbow
-    # just to standardize our graphs. You can uncomment
-    # The code if you would rather have your version
-    X3_scaled = train_scaled3[[
-        'scaled_garage_car_count', 'scaled_pool_count', 'scaled_lot_sqft']]
-    return generate_elbow(X3_scaled, 2, 12)
-    # with plt.style.context('seaborn-whitegrid'):
-    #     plt.figure(figsize=(9, 6))
-    #     pd.Series({k: KMeans(k).fit(X3_scaled)\
-    #       .inertia_ for k in range(2, 12)})\
-    #         .plot(
-    #         marker='x')
-    #     plt.xticks(range(2, 12))
-    #     plt.xlabel('k')
-    #     plt.ylabel('inertia')
-    #     plt.title('Change in inertia as k increases')
-
-    #     plt.show()
-
-
+def elbow_for_Q3(train_scaled3):
+    
+    X3_scaled = train_scaled3[['scaled_garage_car_count', 'scaled_pool_count', 'scaled_lot_sqft']]
+    
+    with plt.style.context('seaborn-whitegrid'):
+        plt.figure(figsize=(9, 6))
+        pd.Series({k: KMeans(k).fit(X3_scaled).inertia_ for k in range(2, 12)}).plot(marker='x')
+        plt.xticks(range(2, 12))
+        plt.xlabel('k')
+        plt.ylabel('inertia')
+        plt.title('Change in inertia as k increases')
+        
+        plt.show()
+     
+    
 def viz_for_Q3(train_df: pd.DataFrame) -> None:
+    # TODO Naomi double check the docstring I wrote for this
+    
+    ### Naomi feedback: checked and updated 
     '''
     Generates visualizations of both scaled and unscaled clusters
     of garage car count, pool count, and lot square feet
@@ -185,8 +187,18 @@ def viz_for_Q3(train_df: pd.DataFrame) -> None:
 
     plt.show()
 
+def scaled_3(train_df):
+    train_scaled3 = w.scale(train_df, ['garage_car_count', 'pool_count', 'lot_sqft'])
+    X3_scaled = train_scaled3[['scaled_garage_car_count', 'scaled_pool_count', 'scaled_lot_sqft']]
+    kmeans = KMeans(n_clusters=4, random_state=89).fit(X3_scaled)
+    train_scaled3['cluster3_scaled'] = kmeans.predict(X3_scaled)
+    train_scaled3['log_error'] = train_df['log_error']
+    
+    return train_scaled3
 
-def cluster_fun(df: pd.DataFrame) -> pd.DataFrame:
+
+
+def cluster_creator(df: pd.DataFrame) -> pd.DataFrame:
     '''
     Creates `DataFrame` of a given list of features pairwise as well as plots
     visualizations
@@ -228,25 +240,18 @@ def tax_sqft_plot(df: pd.DataFrame) -> None:
     None (plots values to Jupyter notebook)
     '''
     sns.set_palette('magma')
-    # Generate Subplots
-    fig, axs = plt.subplots(1, 2, figsize=(12, 5), sharex=True, sharey=True)
-    # Convert to float so seaborn doesn't freak out
+    fig, axs = plt.subplots(1, 2,figsize=(12,5),sharex=True,sharey=True)
     df.log_error = df.log_error.astype('float')
-    # Scatter plot with all training data
     sns.scatterplot(data=df, x='calc_sqft', y='tax_value',
                     hue='log_error', ax=axs[0],
                     palette='magma')
-    # Remove values where abs(log_error) >= 1
     calc = df[np.abs(df.log_error) >= 1]
-    # Scatter plot of these values
     sns.scatterplot(data=calc, x='calc_sqft', y='tax_value',
                     hue='log_error', ax=axs[1],
                     palette='magma')
-    # Set titles
     fig.suptitle('Tax Value vs. Calculated Sqft.')
     axs[0].set_title('All Data')
     axs[1].set_title('Abs. Val of Log Error >= 1')
-    # show plot
     plt.show()
 
 
@@ -260,91 +265,15 @@ def tax_sqft_cluster_plot(train: pd.DataFrame) -> None:
     ## Returns
     None (plots visualizations to Jupyter notebook)
     '''
-    # Get x and y values
     tax_sqft = train[['calc_sqft', 'tax_value']]
-    # Generate K-Means
+    tax_sqft['calc_sqft'] = train['calc_sqft']
+    tax_sqft['tax_value'] = train['tax_value']
     kmeans = KMeans(5, random_state=420)
-    # Fit KMeans
     kmeans.fit(tax_sqft)
-    # Get cluster values
     tax_sqft['tax_sqft_cluster'] = kmeans.predict(tax_sqft)
     tax_sqft['log_error'] = train.log_error
-    # Set Seaborn palette
     sns.set_palette('magma')
-    # Generate facet grid
     g = sns.FacetGrid(data=tax_sqft, col='tax_sqft_cluster',
                       col_wrap=3, sharey=True).set(yscale='log')
-    # Map facet grid to histplot
     g.map_dataframe(sns.histplot, x='log_error')
     plt.show()
-
-
-def viz_for_Q3(train: pd.DataFrame) -> None:
-
-    # unscaled data
-    X3 = train[['garage_car_count', 'pool_count', 'lot_sqft']]
-    kmeans = KMeans(n_clusters=4, random_state=89).fit(X3)
-    train['cluster3'] = kmeans.predict(X3)
-
-    train_scale = train.copy()
-    # scaled data
-    train_scaled3 = w.scale(
-        train_scale, ['garage_car_count', 'pool_count', 'lot_sqft'])
-    X3_scaled = train_scaled3[[
-        'scaled_garage_car_count', 'scaled_pool_count', 'scaled_lot_sqft']]
-    kmeans = KMeans(n_clusters=4, random_state=89).fit(X3_scaled)
-    train_scaled3['cluster3_scaled'] = kmeans.predict(X3_scaled)
-    train_scaled3['log_error'] = train['log_error']
-
-    # viz
-    fig, axes = plt.subplots(1, 2, figsize=(15, 10), sharey=True)
-    fig.subtitle = ('Unscaled vs. Scaled')
-
-    # Unscaled
-    sns.stripplot(ax=axes[0], data=train, x='cluster3',
-                  y='log_error', cmap='flare')
-    axes[0].set_title('Unscaled')
-
-    # Scaled
-    sns.stripplot(ax=axes[1], data=train_scaled3,
-                  x='cluster3_scaled', y='log_error', cmap='flare')
-    axes[1].set_title('Scaled')
-
-    plt.show()
-
-
-def anova_test(df: pd.DataFrame, col: str) -> md:
-    # TODO Naomi docstring
-    '''
-    [DESCRIBE WHAT FUNCTION DOES]
-    ## Parameters
-    df: [PARAMETER DESCRIPTION]
-    col: [PARAMETER DESCRIPTION]
-    ## Returns
-    [WHAT DOES THE FUNCTION RETURN]
-    '''
-    group_list = [df[df[col] == x].log_error.to_numpy() for x in range(4)]
-    t, p = stats.kruskal(
-        group_list[0], group_list[1], group_list[2], group_list[3])
-    return t_to_md(t, p)
-
-
-def scaled_3(train_df: pd.DataFrame) -> pd.DataFrame:
-    # TODO Naomi docstring
-    '''
-    [DESCRIBE WHAT FUNCTION DOES]
-    ## Parameters
-    df: [PARAMETER DESCRIPTION]
-    col: [PARAMETER DESCRIPTION]
-    ## Returns
-    [WHAT DOES THE FUNCTION RETURN]
-    '''
-    train_scaled3 = w.scale(
-        train_df, ['garage_car_count', 'pool_count', 'lot_sqft'])
-    X3_scaled = train_scaled3[[
-        'scaled_garage_car_count', 'scaled_pool_count', 'scaled_lot_sqft']]
-    kmeans = KMeans(n_clusters=4, random_state=89).fit(X3_scaled)
-    train_scaled3['cluster3_scaled'] = kmeans.predict(X3_scaled)
-    train_scaled3['log_error'] = train_df['log_error']
-
-    return train_scaled3
