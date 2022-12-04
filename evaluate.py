@@ -1,24 +1,26 @@
 '''evaluate contains helper functions to assist in evaluation of models'''
-from typing import Union, List
+from typing import List, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import model as m
 from sklearn.metrics import mean_squared_error
 
+import model as m
 from custom_dtypes import ModelDataType, lmplot_kwargs
 
 
-def get_residuals(y_true: ModelDataType, y_pred: Union[ModelDataType, float]) -> pd.DataFrame:
+def get_residuals(y_true: ModelDataType,
+                  y_pred: Union[ModelDataType, float]) -> pd.DataFrame:
     '''
     gets the residual and residual squared values for predicted y values
     ## Parameters
     y_true: `DataType` containing true y values
     y_pred: either a `DataType` or `float` with predicted y values
     ## Returns
-    `pandas.DataFrame` containing true y_true, the residual values, and the residual squared values
+    `pandas.DataFrame` containing true y_true,
+     the residual values, and the residual squared values
     '''
     ret_frame = pd.DataFrame()
     ret_frame['actual'] = y_true
@@ -43,12 +45,14 @@ def plot_residuals(y_true: pd.Series, y_pred: pd.Series) -> None:
     plt.show()
 
 
-def sum_of_squared_errors(y_true: ModelDataType, y_pred: Union[ModelDataType, float]) -> float:
+def sum_of_squared_errors(y_true: ModelDataType,
+                          y_pred: Union[ModelDataType, float]) -> float:
     '''
     returns the Sum of Squared Errors for predicted y values
     ## Parameters
     y_true: `DataType` of true y values.
-    y_pred: either a `DataType` or `float` (in case evaluating baseline) of predicted y
+    y_pred: either a `DataType` or `float` (in case evaluating baseline)
+    of predicted y
     ## Returns
     Sum of Squared Errors for input datasets
     '''
@@ -57,7 +61,8 @@ def sum_of_squared_errors(y_true: ModelDataType, y_pred: Union[ModelDataType, fl
     return sse
 
 
-def explained_sum_of_sqrd(y_true: ModelDataType, y_pred: ModelDataType) -> float:
+def explained_sum_of_sqrd(y_true: ModelDataType,
+                          y_pred: ModelDataType) -> float:
     '''
     returns Explained Sum of Squared Errors for predicted y values
     ## Parameters
@@ -69,7 +74,8 @@ def explained_sum_of_sqrd(y_true: ModelDataType, y_pred: ModelDataType) -> float
     return np.sum((y_pred - y_true.mean())**2)
 
 
-def total_sum_of_squares(y_true: ModelDataType, y_pred: ModelDataType) -> float:
+def total_sum_of_squares(y_true: ModelDataType,
+                         y_pred: ModelDataType) -> float:
     '''
     returns the Total Sum of Squares error for predicted y values
     ## Parameters
@@ -78,21 +84,26 @@ def total_sum_of_squares(y_true: ModelDataType, y_pred: ModelDataType) -> float:
     ## Returns
     `float` representing the Total Sum of Squares in y_pred
     '''
-    return explained_sum_of_sqrd(y_true, y_pred) + sum_of_squared_errors(y_true, y_pred)
+    return explained_sum_of_sqrd(y_true, y_pred)\
+        + sum_of_squared_errors(y_true, y_pred)
 
 
-def regression_errors(y_true: ModelDataType, y_pred: Union[ModelDataType, float], title: str)\
-        -> pd.DataFrame:
+def regression_errors(y_true: ModelDataType,
+                      y_pred: Union[ModelDataType, float],
+                      title: str) -> pd.DataFrame:
     '''
     performs Sum of Squared Errors (SSE), Explained Sum of Squares (ESS),
-    Total Sum of Squares (TSS), Mean Squared Error and Root Mean Squared Error (MSE)
+    Total Sum of Squares (TSS),
+    Mean Squared Error and Root Mean Squared Error (MSE)
     on predicted y values.
     ## Parameters
     y_true: `DataType` of true values for y
-    y_pred: Either `DataType` or `float` (in case of evaluating baseline) of predicted y values
+    y_pred: Either `DataType` or `float`
+    (in case of evaluating baseline) of predicted y values
     ## Returns
-    a formatted `pandas.DataFrame` containing the SSE, ESS (if not evaluating basleine),
-    TSS (if not evaluating baseline), MSE, and RMSE values for y_pred.
+    a formatted `pandas.DataFrame` containing the SSE, ESS
+    (if not evaluating baseline),TSS (if not evaluating baseline),
+    MSE, and RMSE values for y_pred.
 
     '''
     ret_dict = {}
@@ -110,6 +121,7 @@ def regression_errors(y_true: ModelDataType, y_pred: Union[ModelDataType, float]
 
 
 def get_errors(predictions: List[pd.DataFrame], labels: List[str]):
+    # TODO Woody docstring
     if len(labels) != len(predictions):
         raise Exception("predictions and labels must be the same length")
     errors = []
