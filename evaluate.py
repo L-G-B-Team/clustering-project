@@ -1,5 +1,5 @@
 '''evaluate contains helper functions to assist in evaluation of models'''
-from typing import Union
+from typing import Union,List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,10 +7,10 @@ import pandas as pd
 import seaborn as sns
 from sklearn.metrics import mean_squared_error
 
-from custom_dtypes import ModelDataType,lmplot_kwargs
+from custom_dtypes import ModelDataType, lmplot_kwargs
 
 
-def get_residuals(y_true:ModelDataType,y_pred:Union[ModelDataType,float])->pd.DataFrame:
+def get_residuals(y_true: ModelDataType, y_pred: Union[ModelDataType, float]) -> pd.DataFrame:
     '''
     gets the residual and residual squared values for predicted y values
     ## Parameters
@@ -24,7 +24,9 @@ def get_residuals(y_true:ModelDataType,y_pred:Union[ModelDataType,float])->pd.Da
     ret_frame['residual'] = y_true - y_pred
     ret_frame['residual_squared'] = ret_frame.residual ** 2
     return ret_frame
-def plot_residuals(y_true:pd.Series,y_pred:pd.Series)->None:
+
+
+def plot_residuals(y_true: pd.Series, y_pred: pd.Series) -> None:
     '''
     plots the residuals of y_pred vs. y_true
     ## Parameters
@@ -33,11 +35,14 @@ def plot_residuals(y_true:pd.Series,y_pred:pd.Series)->None:
     ## Returns
     None
     '''
-    res = get_residuals(y_true,y_pred)
-    sns.scatterplot(data=res,x='actual',y='residual',color=lmplot_kwargs['scatter']['color'])
-    plt.axhline(0,color=lmplot_kwargs['line']['color'])
+    res = get_residuals(y_true, y_pred)
+    sns.scatterplot(data=res, x='actual', y='residual',
+                    color=lmplot_kwargs['scatter']['color'])
+    plt.axhline(0, color=lmplot_kwargs['line']['color'])
     plt.show()
-def sum_of_squared_errors(y_true:ModelDataType,y_pred:Union[ModelDataType,float])->float:
+
+
+def sum_of_squared_errors(y_true: ModelDataType, y_pred: Union[ModelDataType, float]) -> float:
     '''
     returns the Sum of Squared Errors for predicted y values
     ## Parameters
@@ -46,10 +51,12 @@ def sum_of_squared_errors(y_true:ModelDataType,y_pred:Union[ModelDataType,float]
     ## Returns
     Sum of Squared Errors for input datasets
     '''
-    ret_frame = get_residuals(y_true,y_pred)
+    ret_frame = get_residuals(y_true, y_pred)
     sse = np.sum(ret_frame.residual_squared)
     return sse
-def explained_sum_of_sqrd(y_true:ModelDataType,y_pred:ModelDataType)->float:
+
+
+def explained_sum_of_sqrd(y_true: ModelDataType, y_pred: ModelDataType) -> float:
     '''
     returns Explained Sum of Squared Errors for predicted y values
     ## Parameters
@@ -59,7 +66,9 @@ def explained_sum_of_sqrd(y_true:ModelDataType,y_pred:ModelDataType)->float:
     a `float` representing the Explained Sum of Squared Errors in y_pred
     '''
     return np.sum((y_pred - y_true.mean())**2)
-def total_sum_of_squares(y_true:ModelDataType,y_pred:ModelDataType)->float:
+
+
+def total_sum_of_squares(y_true: ModelDataType, y_pred: ModelDataType) -> float:
     '''
     returns the Total Sum of Squares error for predicted y values
     ## Parameters
@@ -68,9 +77,11 @@ def total_sum_of_squares(y_true:ModelDataType,y_pred:ModelDataType)->float:
     ## Returns
     `float` representing the Total Sum of Squares in y_pred
     '''
-    return explained_sum_of_sqrd(y_true,y_pred) + sum_of_squared_errors(y_true,y_pred)
-def regression_errors(y_true:ModelDataType,y_pred:Union[ModelDataType,float],title:str)\
-    ->pd.DataFrame:
+    return explained_sum_of_sqrd(y_true, y_pred) + sum_of_squared_errors(y_true, y_pred)
+
+
+def regression_errors(y_true: ModelDataType, y_pred: Union[ModelDataType, float], title: str)\
+        -> pd.DataFrame:
     '''
     performs Sum of Squared Errors (SSE), Explained Sum of Squares (ESS),
     Total Sum of Squares (TSS), Mean Squared Error and Root Mean Squared Error (MSE)
@@ -84,13 +95,23 @@ def regression_errors(y_true:ModelDataType,y_pred:Union[ModelDataType,float],tit
 
     '''
     ret_dict = {}
-    ret_dict['SSE'] = sum_of_squared_errors(y_true,y_pred)
-    if not isinstance(y_pred,float):
-        ret_dict['ESS'] = explained_sum_of_sqrd(y_true,y_pred)
+    ret_dict['SSE'] = sum_of_squared_errors(y_true, y_pred)
+    if not isinstance(y_pred, float):
+        ret_dict['ESS'] = explained_sum_of_sqrd(y_true, y_pred)
         ret_dict['TSS'] = ret_dict['SSE'] + ret_dict['ESS']
-        ret_dict['MSE'] = mean_squared_error(y_true,y_pred)
+        ret_dict['MSE'] = mean_squared_error(y_true, y_pred)
     else:
-        ret_dict['MSE'] = mean_squared_error(y_true,[y_pred for i in range(y_true.count())])
-    ret_dict['RMSE']= np.sqrt(ret_dict['MSE'])
-    ret_frame =  pd.DataFrame(ret_dict,index=[title])
+        ret_dict['MSE'] = mean_squared_error(
+            y_true, [y_pred for i in range(y_true.count())])
+    ret_dict['RMSE'] = np.sqrt(ret_dict['MSE'])
+    ret_frame = pd.DataFrame(ret_dict, index=[title])
     return ret_frame
+
+def get_errors(predictions:List[pd.DataFrame],labels:List[str]):
+    if len(labels) != len(predictions):
+        raise Exception("predictions and labels must be the same length")
+    errors = []
+    for prediction in zip(predictions,labels):
+       error = regression_errors(prediction[0].y_true,prediction[0].y_pred,prediction[1])
+       errors.append(error)
+    return pd.concat(errors)

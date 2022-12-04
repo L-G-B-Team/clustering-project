@@ -179,7 +179,7 @@ def apply_to_clusters(df: pd.DataFrame, features: str, target: str,
 
 def process_model(df: pd.DataFrame, features: List[str], target: str,
                   cluster_cols: List[str],
-                  regressor: Union[List[LinearRegressionType],
+                  regressor: Union[Dict[int, LinearRegressionType],
                                    LinearRegressionType],
                   cluster_name: str,
                   scaler: Union[MinMaxScaler, None] = None,
@@ -188,6 +188,7 @@ def process_model(df: pd.DataFrame, features: List[str], target: str,
                   ) -> Tuple[pd.DataFrame, MinMaxScaler,
                              KMeans, Dict[int, LinearRegressionType]]:
     # TODO Woody Docstring
+    df = df.copy()
     return_index = df.index
     df_min = df[target].min()
     if df_min < 0:
@@ -195,8 +196,8 @@ def process_model(df: pd.DataFrame, features: List[str], target: str,
     df = df.reset_index(drop=True)
     scaled_clustered_df, scaler, kmeans = scale_and_cluster(
         df=df, features=features, cluster_cols=cluster_cols,
-        cluster_name=cluster_name, target=target, k=k)
-    if ~isinstance(LinearRegressionType, list):
+        cluster_name=cluster_name, target=target, k=k,scaler=scaler,kmeans=kmeans)
+    if isinstance(regressor, (LinearRegression, TweedieRegressor, LassoLars)):
         regressor = generate_regressor(
             scaled_clustered_df, features, target, cluster_name, regressor)
     y_predictions = apply_to_clusters(
@@ -204,3 +205,61 @@ def process_model(df: pd.DataFrame, features: List[str], target: str,
     df.index = return_index
     y_predictions.index = return_index
     return y_predictions, scaler, kmeans, regressor
+
+
+def train_and_validate_errors(train: pd.DataFrame, validate: pd.DataFrame):
+    modeling_vars = ['fireplace_count', 'latitude',
+                     'longitude', 'tax_value', 'calc_sqft', 'log_error']
+    training = train[modeling_vars]
+    validating = validate[modeling_vars]
+    features = ['fireplace_count', 'tax_value', 'calc_sqft']
+    cluster_cols = ['tax_value', 'calc_sqft']
+    cluster_name = 'tax_and_location'
+    target = 'log_error'
+    k = 1
+    kmeans = None
+    scaler = None
+    regressor = TweedieRegressor(power=1, alpha=1.0)
+    current_df = training
+    tweedie_train_predictions, scaler, kmeans, regressor = process_model(
+        df=current_df, features=features,
+        target=target, cluster_cols=cluster_cols, cluster_name=cluster_name,
+        regressor=regressor, k=k, kmeans=kmeans, scaler=scaler)
+    current_df = validating
+    tweedie_validate_predictions, _, _, _ =\
+        process_model(df=current_df,
+                      features=features,
+                      target=target,
+                      cluster_cols=cluster_cols,
+                      cluster_name=cluster_name,
+                      regressor=regressor,
+                      k=k, kmeans=kmeans,
+                      scaler=scaler)
+    regressor = LassoLars(alpha=1.0)
+    current_df = training
+    llars_train_predictions, scaler, kmeans, regressor = process_model(
+        df=current_df, features=features,
+        target=target, cluster_cols=cluster_cols, cluster_name=cluster_name,
+        regressor=regressor, k=k, kmeans=kmeans, scaler=scaler)
+    current_df = validating
+    llars_validate_predictions, _, _, _ = process_model(
+        df=current_df, features=features,
+        target=target, cluster_cols=cluster_cols, cluster_name=cluster_name,
+        regressor=regressor, k=k, kmeans=kmeans, scaler=scaler)
+    regressor = LinearRegression(normalize=True)
+    current_df = training
+    linreg_train_predictions, scaler, kmeans, regressor = process_model(
+        df=current_df, features=features,
+        target=target, cluster_cols=cluster_cols, cluster_name=cluster_name,
+        regressor=regressor, k=k, kmeans=kmeans, scaler=scaler)
+    current_df = validating
+    linreg_validate_predictions, _, _, _ = process_model(
+        df=current_df, features=features,
+        target=target, cluster_cols=cluster_cols, cluster_name=cluster_name,
+        regressor=regressor, k=k, kmeans=kmeans, scaler=scaler)
+    return ev.get_errors([tweedie_train_predictions, tweedie_validate_predictions,
+                   llars_train_predictions, llars_validate_predictions,
+                   linreg_train_predictions, linreg_validate_predictions],
+                  ['TweedieRegressor train', 'TweedieRegressor validate',
+                  'LASSO+LARS train', 'LASSO+LARS validate',
+                   'LinearRegression train', 'LinearRegression validate'])
