@@ -60,9 +60,11 @@ def t_to_md(p: float, t: float, alpha: float = .05, **kwargs):
 
 def anova_test(df: pd.DataFrame, col: str):
     # TODO Naomi: change to new stats test and fill in docstring
+    ## Naomi feedback, will use another stat test, but not delete this one. Docstring filled.
     '''
+    Nicely displays the results of and runs anova stat test
     ## Parameters
-
+    X-train dataframe containing 
     ## Returns
 
     '''
@@ -127,6 +129,21 @@ def generate_elbow(df: pd.DataFrame, k_min: int = 1, k_max: int = 30) -> None:
     plt.show()
 
 
+def elbow_for_Q3(train_scaled3):
+    
+    X3_scaled = train_scaled3[['scaled_garage_car_count', 'scaled_pool_count', 'scaled_lot_sqft']]
+    
+    with plt.style.context('seaborn-whitegrid'):
+        plt.figure(figsize=(9, 6))
+        pd.Series({k: KMeans(k).fit(X3_scaled).inertia_ for k in range(2, 12)}).plot(marker='x')
+        plt.xticks(range(2, 12))
+        plt.xlabel('k')
+        plt.ylabel('inertia')
+        plt.title('Change in inertia as k increases')
+        
+        plt.show()
+     
+    
 def viz_for_Q3(train_df: pd.DataFrame) -> None:
     # TODO Naomi double check the docstring I wrote for this
     
