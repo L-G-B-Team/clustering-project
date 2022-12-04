@@ -1,5 +1,5 @@
 '''model contains helper functions to assist in Modeling portion of final_report.ipynb'''
-from typing import Union, Tuple, Dict, Callable
+from typing import Union, Tuple, Dict, Callable, List
 
 import numpy as np
 import pandas as pd
@@ -121,27 +121,40 @@ def rmse_eval(ytrue: Dict[str, np.array],
     return ret_df
 
 
-def apply_to_clusters(features: pd.DataFrame, target: pd.Series,
-                      cluster_col: str,
-                      regressor: Dict[int, LinearRegressionType],
-                      **kwargs) -> pd.DataFrame:
-    # TODO Woody Docstring
-    return_frame = pd.DataFrame({'y_true': target})
-    for cluster in np.unique(features[cluster_col]):
-        cluster_df = features[(features[cluster_col] == cluster)]
-        return_frame['yhat_'+str(cluster)] = regressor.predict(cluster_df)
-    return return_frame
-
-
-def generate_regressor(features: pd.DataFrame,
-                       target: pd.Series,
+def generate_regressor(df: pd.DataFrame, features: List[str],
+                       target: str,
                        cluster_col: str,
                        regressor: Callable,
                        **kwargs) -> Dict[int, Callable]:
     # TODO Woody docstring
     return_dict = {}
-    for cluster in np.unique(features[cluster_col]):
-        x_train = features[features[cluster_col] == cluster]
-        regressor.__init__(kwargs)
-        return_dict[cluster] = regressor.fit(x_train, target)
+    for cluster in np.unique(df[cluster_col]):
+        x_train = df[df[cluster_col] == cluster][features]
+        y_train = df[df[cluster_col] == cluster][[target]]
+        regressor = regressor.fit(x_train, y_train)
+        return_dict[cluster] = regressor
+
     return return_dict
+
+
+def apply_to_clusters(df: pd.DataFrame, features: str, target: str,
+                      cluster_col: str,
+                      regressors: Dict[int, LinearRegressionType],
+                      **kwargs) -> pd.DataFrame:
+    # TODO Woody Docstring
+
+    predictions_df = pd.DataFrame()
+    predictions_df['y_true'] = df.log_error
+    predictions_df['y_pred'] = 1.0
+    cluster_group = df.groupby(cluster_col)
+    for i, group in cluster_group:
+        predictions_df.iloc[group.index,
+                            1] = regressors[i].predict(group[features])
+
+    return predictions_df
+
+
+def process_model(df: pd.DataFrame, features: List[str], target: str, scaler: Union[MinMaxScaler, None] = None, kmeans: Union[KMeans, None] = None, k: Union[int, None] = None,
+                  regressors: Union[List[LinearRegressionType], None] = None) -> Tuple[pd.DataFrame, MinMaxScaler, LinearRegressionType]:
+    # TODO Woody Docstring
+    pass
