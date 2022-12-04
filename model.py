@@ -14,7 +14,7 @@ import evaluate as ev
 from custom_dtypes import LinearRegressionType, ModelDataType
 
 
-def select_baseline(ytrain: pd.Series) -> md:
+def select_baseline(ytrain: pd.Series) -> Tuple[md,pd.DataFrame]:
     '''tests mean and median of training data as a baseline metric.
     # Parameters
     ytrain: `pandas.Series` containing the target variable
@@ -28,7 +28,7 @@ def select_baseline(ytrain: pd.Series) -> md:
     ret_md = pd.concat([mean_eval, med_eval]).to_markdown()
     ret_md += '\n### Because mean outperformed median on all metrics, \
         we will use mean as our baseline'
-    return md(ret_md)
+    return md(ret_md),mean_eval
 
 
 def linear_regression(x: pd.DataFrame, y: pd.DataFrame,
@@ -196,7 +196,7 @@ def process_model(df: pd.DataFrame, features: List[str], target: str,
     df = df.reset_index(drop=True)
     scaled_clustered_df, scaler, kmeans = scale_and_cluster(
         df=df, features=features, cluster_cols=cluster_cols,
-        cluster_name=cluster_name, target=target, k=k,scaler=scaler,kmeans=kmeans)
+        cluster_name=cluster_name, target=target, k=k, scaler=scaler, kmeans=kmeans)
     if isinstance(regressor, (LinearRegression, TweedieRegressor, LassoLars)):
         regressor = generate_regressor(
             scaled_clustered_df, features, target, cluster_name, regressor)
@@ -258,9 +258,14 @@ def train_and_validate_errors(train: pd.DataFrame, validate: pd.DataFrame):
         df=current_df, features=features,
         target=target, cluster_cols=cluster_cols, cluster_name=cluster_name,
         regressor=regressor, k=k, kmeans=kmeans, scaler=scaler)
-    return ev.get_errors([tweedie_train_predictions, tweedie_validate_predictions,
-                   llars_train_predictions, llars_validate_predictions,
-                   linreg_train_predictions, linreg_validate_predictions],
-                  ['TweedieRegressor train', 'TweedieRegressor validate',
-                  'LASSO+LARS train', 'LASSO+LARS validate',
-                   'LinearRegression train', 'LinearRegression validate'])
+    return ev.get_errors([tweedie_train_predictions,
+                          tweedie_validate_predictions,
+                          llars_train_predictions,
+                          llars_validate_predictions,
+                          linreg_train_predictions,
+                          linreg_validate_predictions],
+                         ['TweedieRegressor train',
+                         'TweedieRegressor validate',
+                          'LASSO+LARS train', 'LASSO+LARS validate',
+                          'LinearRegression train',
+                          'LinearRegression validate'])
