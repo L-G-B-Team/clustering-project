@@ -33,6 +33,28 @@ def p_to_md(p: float, alpha: float = .05, **kwargs) -> md:
         f'we {"failed to " if ~(p_flag) else ""} reject $H_0$'
     return md(ret_str)
 
+def t_to_md_1samp(p: float, t: float, alpha: float = .05, **kwargs):
+    '''takes a p-value, alpha, and any T-test arguments and
+    creates a Markdown object with the information.
+    ## Parameters
+    p: float of the p value from run T-Test
+    t: float of the t-value from run T-Test
+    alpha: desired alpha value, defaults to 0.05
+    ## Returns
+    `IPython.display.Markdown` object with results of the statistical test
+    '''
+    ret_str = ''
+    t_flag = t > 0
+    p_flag = p/2 < alpha
+    ret_str += f'## t = {t} \n\n'
+    for k, v in kwargs.items():
+        ret_str += f'## {k} = {v}\n\n'
+    ret_str += f' ## p = {p} \n\n'
+    ret_str += (f'## Because t {">" if t_flag else "<"} 0 '
+                f'and $\\alpha$ {">" if p_flag else "<"} p/2, '
+                f'we {"failed to " if ~(t_flag & p_flag) else ""} '
+                ' reject $H_0$')
+    return md(ret_str)
 
 def t_to_md(p: float, t: float, alpha: float = .05, **kwargs):
     '''takes a p-value, alpha, and any T-test arguments and
@@ -300,3 +322,13 @@ def tax_sqft_cluster_plot(train: pd.DataFrame) -> None:
                       col_wrap=3, sharey=True).set(yscale='log')
     g.map_dataframe(sns.histplot, x='log_error')
     plt.show()
+def fips_plot(train:pd.DataFrame)->None:
+    sns.set_palette('magma')
+    sns.barplot(data=train,x='fips',y='log_error')
+    plt.title('Avg. Log Error by FIPS code')
+    plt.show()
+def fips_test(train:pd.DataFrame)->md:
+    mean = train.log_error.mean()
+    fips_train = train[train.fips == 6059].log_error
+    t,p = stats.ttest_1samp(fips_train,mean)
+    return t_to_md_1samp(p,t)
