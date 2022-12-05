@@ -209,7 +209,7 @@ def scaled_4(train_df):
 
 def elbow_for_Q4(train_scaled4):
     
-    X4_scaled = train_scaled4[['scaled_garage_car_count', 'scaled_pool_count', 'scaled_lot_sqft']]
+    X4_scaled = train_scaled4[['scaled_fireplace_count', 'scaled_calc_sqft', 'scaled_tax_value', 'scaled_latitude', 'scaled_longitude']]
     
     with plt.style.context('seaborn-whitegrid'):
         plt.figure(figsize=(9, 6))
