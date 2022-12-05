@@ -339,6 +339,7 @@ def tax_sqft_cluster_plot(train: pd.DataFrame) -> None:
 
 
 def fips_plot(train: pd.DataFrame) -> None:
+    # TODO Woody Docstring
     sns.set_palette('magma')
     sns.barplot(data=train, x='fips', y='log_error')
     plt.title('Avg. Log Error by FIPS code')
@@ -346,6 +347,7 @@ def fips_plot(train: pd.DataFrame) -> None:
 
 
 def fips_test(train: pd.DataFrame) -> md:
+    # TODO Woody Docstring
     mean = train.log_error.mean()
     fips_train = train[train.fips == 6059].log_error
     t, p = stats.ttest_1samp(fips_train, mean)
