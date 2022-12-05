@@ -128,7 +128,7 @@ def generate_elbow(df: pd.DataFrame, k_min: int = 1, k_max: int = 30) -> None:
         axs[1].set_title('% Change')
         fig.tight_layout()
         plt.show()
-
+######## NAOMI'S
 
 def elbow_for_Q3(train_scaled3):
     
@@ -195,8 +195,20 @@ def scaled_3(train_df):
     train_scaled3['log_error'] = train_df['log_error']
     
     return train_scaled3
-
-
+###### NAOMI'S QUESTION 4 FUNCTIONS
+def elbow_for_Q4(train_scaled3):
+    
+    X3_scaled = train_scaled3[['scaled_garage_car_count', 'scaled_pool_count', 'scaled_lot_sqft']]
+    
+    with plt.style.context('seaborn-whitegrid'):
+        plt.figure(figsize=(9, 6))
+        pd.Series({k: KMeans(k).fit(X3_scaled).inertia_ for k in range(2, 12)}).plot(marker='x')
+        plt.xticks(range(2, 12))
+        plt.xlabel('k')
+        plt.ylabel('inertia')
+        plt.title('Change in inertia as k increases')
+        
+        plt.show()
 
 def cluster_creator(df: pd.DataFrame) -> pd.DataFrame:
     '''

@@ -188,12 +188,31 @@ def process_model(df: pd.DataFrame, features: List[str], target: str,
                   k: Union[int, None] = None,
                   ) -> Tuple[pd.DataFrame, MinMaxScaler,
                              KMeans, Dict[int, LinearRegressionType]]:
-    # TODO Woody Docstring
+    '''
+    Performs scaling, clustering, fitting (if applicable)
+    and modeling on input `DataFrame`
+    # Parameters
+    df: `DataFrame` containing all information for modeling
+    features: columns in `df` wqhich contain feature data
+    target: column in `df` which contains target data
+    regressor: either an individual `TweedieRegressor`, `LinearRegression`
+    or `LassoLars` object or a dictionary mapping ints to any of the
+    aforementioned types.
+    cluster_name: string used to indicate what the new
+    cluster column will be called
+    scaler: either a MinMaxScaler object fit to training data set or None
+    kmeans: either a KMeans object fit to training data or None
+    k: number of centroids for `kmeans`
+    # Returns
+    A tuple containing:
+    a `DataFrame` containing the y_true and y_pred information for `df`
+    the `MinMaxcScaler` used in scaling
+    the `KMeans` object used in clustering
+    and a dictionary mapping integers to one of the aforementioned
+    regression models.
+    '''
     df = df.copy()
     return_index = df.index
-    df_min = df[target].min()
-    # if df_min < 0:
-    #     df[target] = df[target] - df_min
     df = df.reset_index(drop=True)
     scaled_clustered_df, scaler, kmeans = scale_and_cluster(
         df=df, features=features, cluster_cols=cluster_cols,
@@ -206,19 +225,28 @@ def process_model(df: pd.DataFrame, features: List[str], target: str,
         scaled_clustered_df, features, target, cluster_name, regressor)
     df.index = return_index
     y_predictions.index = return_index
-    # y_predictions.y_pred = y_predictions.y_pred + df_min
     return y_predictions, scaler, kmeans, regressor
 
 
-def train_and_validate_errors(train: pd.DataFrame, validate: pd.DataFrame):
-    # TODO Woody Docstring
+def train_and_validate_errors(train: pd.DataFrame,
+                              validate: pd.DataFrame) -> pd.DataFrame:
+    '''
+    performs scaling, clustering, fitting (on train only) and prediction
+    on the train and validate data sets.
+    # Parameters
+    train: `DataFrame` containing the training data set
+    validate: `Dataframe` containing the validation data set
+    # Returns
+    a `DataFrame` with error calculations
+    for each data set and regression model
+    '''
     modeling_vars = ['fireplace_count', 'latitude',
                      'longitude', 'tax_value', 'calc_sqft', 'log_error']
     training = train[modeling_vars]
     validating = validate[modeling_vars]
-    features = ['fireplace_count', 'tax_value', 'calc_sqft']
+    features = ['fireplace_count', 'latitude', 'longitude']
     cluster_cols = ['tax_value', 'calc_sqft']
-    cluster_name = 'tax_and_location'
+    cluster_name = 'tax_sqft'
     target = 'log_error'
     k = 1
     kmeans = None
@@ -271,4 +299,22 @@ def train_and_validate_errors(train: pd.DataFrame, validate: pd.DataFrame):
                          'TweedieRegressor validate',
                           'LASSO+LARS train', 'LASSO+LARS validate',
                           'LinearRegression train',
-                          'LinearRegression validate'])
+                          'LinearRegression validate']),\
+        scaler, kmeans, regressor
+
+        
+def test_errors(test: pd.DataFrame, scaler, kmeans, regressors) ->\
+        Union[pd.DataFrame, MinMaxScaler, KMeans, Dict[int, LinearRegressionType]]:
+    # TODO Woody Docstring
+    modeling_vars = ['fireplace_count', 'latitude',
+                     'longitude', 'log_error', 'tax_value', 'calc_sqft']
+    testing = test[modeling_vars]
+    features = ['fireplace_count', 'latitude', 'longitude']
+    cluster_cols = ['tax_value', 'calc_sqft']
+    cluster_name = 'tax_sqft'
+    target = 'log_error'
+    test_predictions, _, _, _ = process_model(
+        testing, features, target, cluster_cols, regressors,
+        cluster_name, scaler, kmeans
+    )
+    return ev.get_errors([test_predictions], ['Test Predictions'])
