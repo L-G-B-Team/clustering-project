@@ -200,7 +200,7 @@ def scaled_3(train_df):
 def scaled_4(train_df):
     train_scaled4 = w.scale(train_df, ['fireplace_count', 'calc_sqft', 'tax_value', 'latitude', 'longitude'])
     X4_scaled = train_scaled4[['scaled_fireplace_count', 'scaled_calc_sqft', 'scaled_tax_value', 'scaled_latitude', 'scaled_longitude']]
-    kmeans = KMeans(n_clusters=4, random_state=89).fit(X4_scaled)
+    kmeans = KMeans(n_clusters=, random_state=89).fit(X4_scaled)
     train_scaled4['cluster4_scaled'] = kmeans.predict(X4_scaled)
     train_scaled4['log_error'] = train_df['log_error']
     
