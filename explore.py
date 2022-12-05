@@ -49,7 +49,7 @@ def t_to_md_1samp(p: float, t: float, alpha: float = .05, **kwargs):
     ret_str += f'## t = {t} \n\n'
     for k, v in kwargs.items():
         ret_str += f'## {k} = {v}\n\n'
-    ret_str += f' ## p = {p} \n\n'
+    ret_str += f' ## p/2 = {p/2} \n\n'
     ret_str += (f'## Because t {">" if t_flag else "<"} 0 '
                 f'and $\\alpha$ {">" if p_flag else "<"} p/2, '
                 f'we {"failed to " if ~(t_flag & p_flag) else ""} '
