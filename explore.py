@@ -33,6 +33,7 @@ def p_to_md(p: float, alpha: float = .05, **kwargs) -> md:
         f'we {"failed to " if ~(p_flag) else ""} reject $H_0$'
     return md(ret_str)
 
+
 def t_to_md_1samp(p: float, t: float, alpha: float = .05, **kwargs):
     '''takes a p-value, alpha, and any T-test arguments and
     creates a Markdown object with the information.
@@ -49,12 +50,13 @@ def t_to_md_1samp(p: float, t: float, alpha: float = .05, **kwargs):
     ret_str += f'## t = {t} \n\n'
     for k, v in kwargs.items():
         ret_str += f'## {k} = {v}\n\n'
-    ret_str += f' ## p = {p} \n\n'
+    ret_str += f' ## p/2 = {p/2} \n\n'
     ret_str += (f'## Because t {">" if t_flag else "<"} 0 '
                 f'and $\\alpha$ {">" if p_flag else "<"} p/2, '
                 f'we {"failed to " if ~(t_flag & p_flag) else ""} '
                 ' reject $H_0$')
     return md(ret_str)
+
 
 def t_to_md(p: float, t: float, alpha: float = .05, **kwargs):
     '''takes a p-value, alpha, and any T-test arguments and
@@ -82,7 +84,7 @@ def t_to_md(p: float, t: float, alpha: float = .05, **kwargs):
 
 def anova_test(df: pd.DataFrame, col: str):
     # TODO Naomi: change to new stats test and fill in docstring
-    ## Naomi feedback, will use another stat test, but not delete this one. Docstring filled.
+    # Naomi feedback, will use another stat test, but not delete this one. Docstring filled.
     '''
     Nicely displays the results of and runs anova stat test
     ## Parameters
@@ -100,8 +102,8 @@ def anova_test(df: pd.DataFrame, col: str):
 def create_clusters_pool_garage_lot_sqft(x_train: pd.DataFrame, k: int):
     # TODO Naomi check this works and approve docstring
     # I took out cluster_vars from the parameters and renamed the function
-    
-    ### Naomi feedback, Does not return clusters as I know what to do with them. Returns n_clusters and random_state
+
+    # Naomi feedback, Does not return clusters as I know what to do with them. Returns n_clusters and random_state
     '''
     Marks K-Means on pool count, garage car count, and lot square feet
     ## Parameters
@@ -143,34 +145,37 @@ def generate_elbow(df: pd.DataFrame, k_min: int = 1, k_max: int = 30) -> None:
         axs[0].set_xlabel('No. of Clusters')
         axs[0].set_ylabel('Inertia')
         pct_change = [((inertia[i]-inertia[i+1])/inertia[i])
-                    * 100 for i in range(k_min, k_max-1)]
+                      * 100 for i in range(k_min, k_max-1)]
         sns.lineplot(data=pct_change, ax=axs[1])
         axs[1].set_xlabel('No. of Clusters')
         axs[1].set_ylabel('% of Change')
         axs[1].set_title('% Change')
         fig.tight_layout()
         plt.show()
-######## NAOMI'S FUNCTIONS FOR QUESTION 3
+# NAOMI'S FUNCTIONS FOR QUESTION 3
+
 
 def elbow_for_Q3(train_scaled3):
-    
-    X3_scaled = train_scaled3[['scaled_garage_car_count', 'scaled_pool_count', 'scaled_lot_sqft']]
-    
+
+    X3_scaled = train_scaled3[[
+        'scaled_garage_car_count', 'scaled_pool_count', 'scaled_lot_sqft']]
+
     with plt.style.context('seaborn-whitegrid'):
         plt.figure(figsize=(9, 6))
-        pd.Series({k: KMeans(k).fit(X3_scaled).inertia_ for k in range(2, 12)}).plot(marker='x')
+        pd.Series({k: KMeans(k).fit(X3_scaled).inertia_ for k in range(2, 12)}).plot(
+            marker='x')
         plt.xticks(range(2, 12))
         plt.xlabel('k')
         plt.ylabel('inertia')
         plt.title('Change in inertia as k increases')
-        
+
         plt.show()
-     
-    
+
+
 def viz_for_Q3(train_df: pd.DataFrame) -> None:
     # TODO Naomi double check the docstring I wrote for this
-    
-    ### Naomi feedback: checked and updated 
+
+    # Naomi feedback: checked and updated
     '''
     Generates visualizations of both scaled and unscaled clusters
     of garage car count, pool count, and lot square feet
@@ -209,39 +214,48 @@ def viz_for_Q3(train_df: pd.DataFrame) -> None:
 
     plt.show()
 
+
 def scaled_3(train_df):
-    train_scaled3 = w.scale(train_df, ['garage_car_count', 'pool_count', 'lot_sqft'])
-    X3_scaled = train_scaled3[['scaled_garage_car_count', 'scaled_pool_count', 'scaled_lot_sqft']]
+    train_scaled3 = w.scale(
+        train_df, ['garage_car_count', 'pool_count', 'lot_sqft'])
+    X3_scaled = train_scaled3[[
+        'scaled_garage_car_count', 'scaled_pool_count', 'scaled_lot_sqft']]
     kmeans = KMeans(n_clusters=4, random_state=89).fit(X3_scaled)
     train_scaled3['cluster3_scaled'] = kmeans.predict(X3_scaled)
     train_scaled3['log_error'] = train_df['log_error']
-    
+
     return train_scaled3
-###### NAOMI'S QUESTION 4 FUNCTIONS
+# NAOMI'S QUESTION 4 FUNCTIONS
+
 
 def scaled_4(train_df):
-    train_scaled4 = w.scale(train_df, ['fireplace_count', 'calc_sqft', 'tax_value', 'latitude', 'longitude'])
-    X4_scaled = train_scaled4[['scaled_fireplace_count', 'scaled_calc_sqft', 'scaled_tax_value', 'scaled_latitude', 'scaled_longitude']]
+    train_scaled4 = w.scale(
+        train_df, ['fireplace_count', 'calc_sqft', 'tax_value', 'latitude', 'longitude'])
+    X4_scaled = train_scaled4[['scaled_fireplace_count', 'scaled_calc_sqft',
+                               'scaled_tax_value', 'scaled_latitude', 'scaled_longitude']]
     kmeans = KMeans(n_clusters=5, random_state=89).fit(X4_scaled)
     train_scaled4['cluster4_scaled'] = kmeans.predict(X4_scaled)
     train_scaled4['log_error'] = train_df['log_error']
-    
+
     return train_scaled4
 
 
 def elbow_for_Q4(train_scaled4):
-    
-    X4_scaled = train_scaled4[['scaled_fireplace_count', 'scaled_calc_sqft', 'scaled_tax_value', 'scaled_latitude', 'scaled_longitude']]
-    
+
+    X4_scaled = train_scaled4[['scaled_fireplace_count', 'scaled_calc_sqft',
+                               'scaled_tax_value', 'scaled_latitude', 'scaled_longitude']]
+
     with plt.style.context('seaborn-whitegrid'):
         plt.figure(figsize=(9, 6))
-        pd.Series({k: KMeans(k).fit(X4_scaled).inertia_ for k in range(2, 12)}).plot(marker='x')
+        pd.Series({k: KMeans(k).fit(X4_scaled).inertia_ for k in range(2, 12)}).plot(
+            marker='x')
         plt.xticks(range(2, 12))
         plt.xlabel('k')
         plt.ylabel('inertia')
         plt.title('Change in inertia as k increases')
-        
+
         plt.show()
+
 
 def cluster_creator(df: pd.DataFrame) -> pd.DataFrame:
     '''
@@ -285,7 +299,7 @@ def tax_sqft_plot(df: pd.DataFrame) -> None:
     None (plots values to Jupyter notebook)
     '''
     sns.set_palette('magma')
-    fig, axs = plt.subplots(1, 2,figsize=(12,5),sharex=True,sharey=True)
+    fig, axs = plt.subplots(1, 2, figsize=(12, 5), sharex=True, sharey=True)
     df.log_error = df.log_error.astype('float')
     sns.scatterplot(data=df, x='calc_sqft', y='tax_value',
                     hue='log_error', ax=axs[0],
@@ -322,13 +336,19 @@ def tax_sqft_cluster_plot(train: pd.DataFrame) -> None:
                       col_wrap=3, sharey=True).set(yscale='log')
     g.map_dataframe(sns.histplot, x='log_error')
     plt.show()
-def fips_plot(train:pd.DataFrame)->None:
+
+
+def fips_plot(train: pd.DataFrame) -> None:
+    # TODO Woody Docstring
     sns.set_palette('magma')
-    sns.barplot(data=train,x='fips',y='log_error')
+    sns.barplot(data=train, x='fips', y='log_error')
     plt.title('Avg. Log Error by FIPS code')
     plt.show()
-def fips_test(train:pd.DataFrame)->md:
+
+
+def fips_test(train: pd.DataFrame) -> md:
+    # TODO Woody Docstring
     mean = train.log_error.mean()
     fips_train = train[train.fips == 6059].log_error
-    t,p = stats.ttest_1samp(fips_train,mean)
-    return t_to_md_1samp(p,t)
+    t, p = stats.ttest_1samp(fips_train, mean)
+    return t_to_md_1samp(p, t)
